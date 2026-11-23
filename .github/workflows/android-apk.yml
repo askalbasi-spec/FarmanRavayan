@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate Android platform files
+        run: flutter create --platforms=android --org=ir.farmanravayan .
+
       - name: Analyze
         run: flutter analyze
 
