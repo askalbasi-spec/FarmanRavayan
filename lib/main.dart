@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'game/battle_screen.dart';
+
 void main() {
   runApp(const FarmanRavayanApp());
 }
@@ -97,7 +99,7 @@ class GameHomePage extends StatelessWidget {
                     icon: Icons.shield,
                     title: 'نبرد تمرینی',
                     subtitle: 'تمرین تاکتیک‌ها در برابر هوش مصنوعی',
-                    onTap: () => _showComingSoon(context, 'نبرد تمرینی'),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const BattleScreen())),
                   ),
                   const SizedBox(height: 14),
                   _MenuTile(
