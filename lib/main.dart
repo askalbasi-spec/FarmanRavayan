@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'game/battle_screen.dart';
 import 'game/campaign_screen.dart';
+import 'game/card_collection_screen.dart';
+import 'game/settings_screen.dart';
 
 void main() {
   runApp(const FarmanRavayanApp());
@@ -28,10 +30,7 @@ class FarmanRavayanApp extends StatelessWidget {
         ),
         useMaterial3: true,
         textTheme: const TextTheme(
-          headlineMedium: TextStyle(
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.4,
-          ),
+          headlineMedium: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.4),
           titleLarge: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
@@ -69,31 +68,27 @@ class GameHomePage extends StatelessWidget {
                   Text(
                     'فرمانروایان',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: const Color(0xFFF0D69A),
-                        ),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: const Color(0xFFF0D69A)),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'سرنوشت پادشاهی را با هوشمندی رقم بزن',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.white70,
-                        ),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white70),
                   ),
                   const SizedBox(height: 36),
                   _MenuTile(
                     icon: Icons.flag,
                     title: 'آغاز کارزار',
-                    subtitle: 'ورود به نبردهای داستانی',
+                    subtitle: 'پنج نبرد داستانی در سرزمین‌های افسانه‌ای',
                     onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CampaignScreen())),
                   ),
                   const SizedBox(height: 14),
                   _MenuTile(
                     icon: Icons.style,
                     title: 'مجموعه کارت‌ها',
-                    subtitle: 'قهرمانان، نیروها، جادوها و تجهیزات',
-                    onTap: () => _showComingSoon(context, 'مجموعه کارت‌ها'),
+                    subtitle: 'مشاهده و بررسی ۲۰ کارت آغازین',
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CardCollectionScreen())),
                   ),
                   const SizedBox(height: 14),
                   _MenuTile(
@@ -106,15 +101,11 @@ class GameHomePage extends StatelessWidget {
                   _MenuTile(
                     icon: Icons.settings,
                     title: 'تنظیمات',
-                    subtitle: 'صدا، نمایش و اطلاعات بازی',
-                    onTap: () => _showComingSoon(context, 'تنظیمات'),
+                    subtitle: 'تنظیمات بازی و اطلاعات نسخه',
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen())),
                   ),
                   const SizedBox(height: 32),
-                  const Text(
-                    'نسخه آزمایشی ۰.۱.۰',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white38, fontSize: 12),
-                  ),
+                  const Text('نسخه آزمایشی ۰.۱.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
@@ -123,21 +114,10 @@ class GameHomePage extends StatelessWidget {
       ),
     );
   }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature در مرحله بعدی توسعه می‌یابد.')),
-    );
-  }
 }
 
 class _MenuTile extends StatelessWidget {
-  const _MenuTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
+  const _MenuTile({required this.icon, required this.title, required this.subtitle, required this.onTap});
 
   final IconData icon;
   final String title;
