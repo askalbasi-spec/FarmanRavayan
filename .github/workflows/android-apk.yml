@@ -42,8 +42,8 @@ jobs:
       - name: Run tests
         run: flutter test
 
-      - name: Build debug APK
-        run: flutter build apk --debug
+      - name: Build optimized test APKs
+        run: flutter build apk --release --split-per-abi
 
       - name: Publish test APK
         if: github.event_name != 'pull_request'
@@ -54,4 +54,7 @@ jobs:
           prerelease: true
           make_latest: false
           overwrite_files: true
-          files: build/app/outputs/flutter-apk/app-debug.apk
+          files: build/app/outputs/flutter-apk/*-release.apk
+          body: |
+            Optimized Android test builds for ARMv7, ARM64 and x86_64.
+            These builds use the temporary debug signing key and are for testing only, not store publication.
