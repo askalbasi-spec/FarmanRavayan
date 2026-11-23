@@ -3,7 +3,7 @@ import 'battle_engine.dart';
 import 'card.dart';
 
 class BattleScreen extends StatefulWidget {
-  const BattleScreen({super.key, this.missionTitle, this.onVictory, this.difficulty});
+  const BattleScreen({super.key, this.missionTitle, this.onVictory, this.difficulty = 1});
   final String? missionTitle;
   final VoidCallback? onVictory;
   final int difficulty;
