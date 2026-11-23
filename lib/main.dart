@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'game/battle_screen.dart';
+import 'game/campaign_screen.dart';
 
 void main() {
   runApp(const FarmanRavayanApp());
@@ -85,7 +86,7 @@ class GameHomePage extends StatelessWidget {
                     icon: Icons.flag,
                     title: 'آغاز کارزار',
                     subtitle: 'ورود به نبردهای داستانی',
-                    onTap: () => _showComingSoon(context, 'کارزار داستانی'),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CampaignScreen())),
                   ),
                   const SizedBox(height: 14),
                   _MenuTile(
