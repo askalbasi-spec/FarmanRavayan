@@ -66,6 +66,15 @@ class BattleEngine {
   void endPlayerTurn() {
     if (state.isOver || !state.playerTurn) return;
     state.playerTurn = false;
+    for (final unit in List<GameCard>.of(state.playerBoard)) {
+      state.enemyHealth -= unit.attack;
+      if (state.enemyHealth <= 0) {
+        state.enemyHealth = 0;
+        state.winner = 'شما';
+        state.message = 'پیروزی! نیروهای شما فرمانده دشمن را شکست دادند.';
+        return;
+      }
+    }
     _enemyTurn();
     if (state.isOver) return;
     state.maxEnergy = (state.maxEnergy + 1).clamp(1, 10);
