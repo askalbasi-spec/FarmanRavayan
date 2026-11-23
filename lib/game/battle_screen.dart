@@ -3,9 +3,10 @@ import 'battle_engine.dart';
 import 'card.dart';
 
 class BattleScreen extends StatefulWidget {
-  const BattleScreen({super.key, this.missionTitle, this.onVictory});
+  const BattleScreen({super.key, this.missionTitle, this.onVictory, this.difficulty});
   final String? missionTitle;
   final VoidCallback? onVictory;
+  final int difficulty;
   @override
   State<BattleScreen> createState() => _BattleScreenState();
 }
@@ -14,12 +15,12 @@ class _BattleScreenState extends State<BattleScreen> {
   late BattleEngine engine;
   bool _reportedVictory = false;
   @override
-  void initState() { super.initState(); engine = BattleEngine(); }
+  void initState() { super.initState(); engine = BattleEngine(difficulty: widget.difficulty); }
 
   void _play(int index) { setState(() => engine.playCard(index)); _reportVictory(); }
   void _endTurn() { setState(() => engine.endPlayerTurn()); _reportVictory(); }
   void _reportVictory() { if (!_reportedVictory && engine.state.winner == 'شما') { _reportedVictory = true; widget.onVictory?.call(); } }
-  void _restart() => setState(() => engine = BattleEngine());
+  void _restart() => setState(() => engine = BattleEngine(difficulty: widget.difficulty));
 
   @override
   Widget build(BuildContext context) {
