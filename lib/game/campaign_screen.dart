@@ -52,6 +52,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
     Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (_) => BattleScreen(
         missionTitle: _missions[index].title,
+        difficulty: index + 1,
         onVictory: () => _complete(index),
       ),
     ));
