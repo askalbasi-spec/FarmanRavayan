@@ -94,7 +94,7 @@ class GameHomePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   _MenuTile(
-                    icon: Icons.swords,
+                    icon: Icons.shield,
                     title: 'نبرد تمرینی',
                     subtitle: 'تمرین تاکتیک‌ها در برابر هوش مصنوعی',
                     onTap: () => _showComingSoon(context, 'نبرد تمرینی'),
