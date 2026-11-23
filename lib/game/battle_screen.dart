@@ -3,25 +3,29 @@ import 'battle_engine.dart';
 import 'card.dart';
 
 class BattleScreen extends StatefulWidget {
-  const BattleScreen({super.key});
+  const BattleScreen({super.key, this.missionTitle, this.onVictory});
+  final String? missionTitle;
+  final VoidCallback? onVictory;
   @override
   State<BattleScreen> createState() => _BattleScreenState();
 }
 
 class _BattleScreenState extends State<BattleScreen> {
   late BattleEngine engine;
+  bool _reportedVictory = false;
   @override
   void initState() { super.initState(); engine = BattleEngine(); }
 
-  void _play(int index) => setState(() => engine.playCard(index));
-  void _endTurn() => setState(() => engine.endPlayerTurn());
+  void _play(int index) { setState(() => engine.playCard(index)); _reportVictory(); }
+  void _endTurn() { setState(() => engine.endPlayerTurn()); _reportVictory(); }
+  void _reportVictory() { if (!_reportedVictory && engine.state.winner == 'شما') { _reportedVictory = true; widget.onVictory?.call(); } }
   void _restart() => setState(() => engine = BattleEngine());
 
   @override
   Widget build(BuildContext context) {
     final game = engine.state;
     return Scaffold(
-      appBar: AppBar(title: const Text('نبرد فرمانروایان'), backgroundColor: const Color(0xFF182438)),
+      appBar: AppBar(title: Text(widget.missionTitle ?? 'نبرد فرمانروایان'), backgroundColor: const Color(0xFF182438)),
       body: Container(
         decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFF26364D), Color(0xFF101827)])),
         child: SafeArea(child: Column(children: [
