@@ -4,6 +4,8 @@ class BattleState {
   BattleState({
     required this.playerHealth,
     required this.enemyHealth,
+    required this.playerMaxHealth,
+    required this.enemyMaxHealth,
     required this.energy,
     required this.maxEnergy,
     required this.hand,
@@ -18,6 +20,8 @@ class BattleState {
 
   int playerHealth;
   int enemyHealth;
+  final int playerMaxHealth;
+  final int enemyMaxHealth;
   int energy;
   int maxEnergy;
   List<GameCard> hand;
@@ -35,9 +39,12 @@ class BattleState {
 class BattleEngine {
   BattleEngine({int difficulty = 1}) {
     final shuffled = List<GameCard>.of(starterCards)..shuffle();
+    final enemyMaxHealth = 20 + ((difficulty - 1).clamp(0, 4) * 5);
     state = BattleState(
       playerHealth: 20,
-      enemyHealth: 20 + ((difficulty - 1).clamp(0, 4) * 5),
+      enemyHealth: enemyMaxHealth,
+      playerMaxHealth: 20,
+      enemyMaxHealth: enemyMaxHealth,
       energy: 1,
       maxEnergy: 1,
       hand: shuffled.take(4).toList(),
@@ -60,7 +67,7 @@ class BattleEngine {
     state.energy -= card.cost;
     state.hand.removeAt(handIndex);
     _resolve(card, player: true);
-    if (!state.isOver) state.message = 'کارت undefined اجرا شد.';
+    if (!state.isOver) state.message = 'کارت «${card.name}» اجرا شد.';
   }
 
   void endPlayerTurn() {
@@ -112,11 +119,11 @@ class BattleEngine {
   void _resolve(GameCard card, {required bool player}) {
     if (card.type == CardType.spell) {
       if (player) {
-        state.enemyHealth = (state.enemyHealth - card.attack).clamp(0, 20);
-        state.playerHealth = (state.playerHealth + card.heal).clamp(0, 20);
+        state.enemyHealth = (state.enemyHealth - card.attack).clamp(0, state.enemyMaxHealth);
+        state.playerHealth = (state.playerHealth + card.heal).clamp(0, state.playerMaxHealth);
       } else {
-        state.playerHealth = (state.playerHealth - card.attack).clamp(0, 20);
-        state.enemyHealth = (state.enemyHealth + card.heal).clamp(0, 20);
+        state.playerHealth = (state.playerHealth - card.attack).clamp(0, state.playerMaxHealth);
+        state.enemyHealth = (state.enemyHealth + card.heal).clamp(0, state.enemyMaxHealth);
       }
     } else if (player) {
       state.playerBoard.add(card);
