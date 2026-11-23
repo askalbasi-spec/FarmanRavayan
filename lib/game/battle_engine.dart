@@ -33,11 +33,11 @@ class BattleState {
 }
 
 class BattleEngine {
-  BattleEngine() {
+  BattleEngine({int difficulty = 1}) {
     final shuffled = List<GameCard>.of(starterCards)..shuffle();
     state = BattleState(
       playerHealth: 20,
-      enemyHealth: 20,
+      enemyHealth: 20 + ((difficulty - 1).clamp(0, 4) * 5),
       energy: 1,
       maxEnergy: 1,
       hand: shuffled.take(4).toList(),
