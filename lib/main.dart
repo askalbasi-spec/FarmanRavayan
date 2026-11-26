@@ -6,6 +6,7 @@ import 'game/campaign_screen.dart';
 import 'game/card_collection_screen.dart';
 import 'game/fx.dart';
 import 'game/settings_screen.dart';
+import 'game/tutorial_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -90,6 +91,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
       _MenuItem(Icons.flag, 'آغاز کارزار', 'ده نبرد داستانی در سرزمین‌های افسانه‌ای', () => _open(const CampaignScreen())),
       _MenuItem(Icons.style, 'مجموعه کارت‌ها', 'مشاهده ۵۰ کارت انیمیشنی در ده گروه', () => _open(const CardCollectionScreen())),
       _MenuItem(Icons.shield, 'نبرد تمرینی', 'تمرین تاکتیک‌ها در برابر هوش مصنوعی', () => _open(const BattleScreen())),
+      _MenuItem(Icons.menu_book, 'راهنمای بازی', 'قوانین نبرد در شش گام کوتاه', () => _open(const TutorialScreen())),
       _MenuItem(Icons.settings, 'تنظیمات', 'تنظیمات بازی و اطلاعات نسخه', () => _open(const SettingsScreen())),
     ];
     return Scaffold(

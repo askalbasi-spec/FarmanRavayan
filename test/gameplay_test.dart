@@ -64,6 +64,22 @@ void main() {
     await settle(tester, seconds: 2);
   });
 
+  testWidgets('tutorial pages can be swiped through', (tester) async {
+    phoneScreen(tester);
+    await tester.pumpWidget(const FarmanRavayanApp());
+    await settle(tester, seconds: 1);
+
+    await tester.ensureVisible(find.text('راهنمای بازی'));
+    await tester.tap(find.text('راهنمای بازی'));
+    await settle(tester, seconds: 1);
+    expect(find.text('هدف بازی'), findsOneWidget);
+
+    await tester.tap(find.text('بعدی'));
+    await settle(tester, seconds: 1);
+    expect(find.text('انرژی'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('settings and collection screens build without errors', (tester) async {
     phoneScreen(tester);
     await tester.pumpWidget(const FarmanRavayanApp());
