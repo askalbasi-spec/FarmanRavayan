@@ -85,6 +85,8 @@ void main() {
     await tester.pumpWidget(const FarmanRavayanApp());
     await settle(tester, seconds: 1);
 
+    await tester.ensureVisible(find.text('تنظیمات'));
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text('تنظیمات'));
     await settle(tester, seconds: 1);
     expect(tester.takeException(), isNull);
