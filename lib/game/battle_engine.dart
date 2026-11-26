@@ -4,6 +4,21 @@ import 'card.dart';
 
 enum Winner { player, enemy }
 
+enum BattleEventKind { played, damage, heal }
+
+/// A visible thing that happened during a call, replayed by the UI as animation.
+class BattleEvent {
+  const BattleEvent(this.kind, {required this.onPlayerSide, this.amount = 0, this.card});
+
+  final BattleEventKind kind;
+
+  /// For `played` the side that played the card; for `damage` and `heal` the
+  /// side whose commander was affected.
+  final bool onPlayerSide;
+  final int amount;
+  final GameCard? card;
+}
+
 /// A card that is on the battlefield, with its own mutable stats.
 class Unit {
   Unit(this.card)
@@ -37,10 +52,11 @@ class BattleState {
     required this.deck,
     required this.enemyDeck,
     required this.enemyHand,
+    List<BattleEvent>? events,
     this.playerTurn = true,
     this.message = 'نوبت شماست؛ یک کارت انتخاب کنید.',
     this.winner,
-  });
+  }) : events = events ?? [];
 
   int playerHealth;
   int enemyHealth;
@@ -57,15 +73,17 @@ class BattleState {
   bool playerTurn;
   String message;
   Winner? winner;
+  final List<BattleEvent> events;
 
   bool get isOver => winner != null;
 }
 
 class BattleEngine {
-  BattleEngine({this.difficulty = 1, Random? random}) : _random = random ?? Random() {
-    final shuffled = List<GameCard>.of(starterCards)..shuffle(_random);
-    final enemyShuffled = List<GameCard>.of(starterCards)..shuffle(_random);
-    final enemyMaxHealth = 20 + ((difficulty - 1).clamp(0, 4) * 5);
+  BattleEngine({this.difficulty = 1, Random? random, List<GameCard>? enemyPool}) : _random = random ?? Random() {
+    final shuffled = List<GameCard>.of(allCards)..shuffle(_random);
+    final pool = (enemyPool == null || enemyPool.isEmpty) ? allCards : enemyPool;
+    final enemyShuffled = <GameCard>[...pool, ...pool]..shuffle(_random);
+    final enemyMaxHealth = 20 + ((difficulty - 1).clamp(0, 9) * 3);
     state = BattleState(
       playerHealth: 20,
       enemyHealth: enemyMaxHealth,
@@ -76,9 +94,9 @@ class BattleEngine {
       hand: shuffled.take(4).toList(),
       playerBoard: [],
       enemyBoard: [],
-      deck: shuffled.skip(4).toList(),
+      deck: shuffled.skip(4).take(26).toList(),
       enemyHand: enemyShuffled.take(3).toList(),
-      enemyDeck: enemyShuffled.skip(3).toList(),
+      enemyDeck: enemyShuffled.skip(3).take(27).toList(),
     );
   }
 
@@ -126,8 +144,8 @@ class BattleEngine {
 
   void _enemyTurn() {
     state.message = 'فرمانده دشمن در حال حرکت است...';
-    // Harder missions give the enemy one extra energy.
-    var budget = (state.maxEnergy + (difficulty >= 3 ? 1 : 0)).clamp(1, 10);
+    // Harder missions give the enemy extra energy.
+    var budget = (state.maxEnergy + (difficulty >= 8 ? 2 : (difficulty >= 4 ? 1 : 0))).clamp(1, 10);
     while (!state.isOver) {
       final playable = state.enemyHand
           .where((c) => c.cost <= budget && _canPlay(c, state.enemyBoard))
@@ -146,7 +164,7 @@ class BattleEngine {
   }
 
   GameCard _chooseEnemyCard(List<GameCard> options) {
-    if (difficulty <= 1) return options[_random.nextInt(options.length)];
+    if (difficulty <= 2) return options[_random.nextInt(options.length)];
     GameCard best = options.first;
     var bestScore = _score(best);
     for (final card in options.skip(1)) {
@@ -185,9 +203,9 @@ class BattleEngine {
       if (!unit.isAlive || unit.attack <= 0) continue;
       if (opposing.isEmpty) {
         if (player) {
-          state.enemyHealth = (state.enemyHealth - unit.attack).clamp(0, state.enemyMaxHealth);
+          _damageCommander(playerSide: false, amount: unit.attack);
         } else {
-          state.playerHealth = (state.playerHealth - unit.attack).clamp(0, state.playerMaxHealth);
+          _damageCommander(playerSide: true, amount: unit.attack);
         }
         _checkWinner();
       } else {
@@ -206,15 +224,11 @@ class BattleEngine {
 
   void _resolve(GameCard card, {required bool player}) {
     final ownBoard = player ? state.playerBoard : state.enemyBoard;
+    state.events.add(BattleEvent(BattleEventKind.played, onPlayerSide: player, card: card));
     switch (card.type) {
       case CardType.spell:
-        if (player) {
-          state.enemyHealth = (state.enemyHealth - card.attack).clamp(0, state.enemyMaxHealth);
-          state.playerHealth = (state.playerHealth + card.heal).clamp(0, state.playerMaxHealth);
-        } else {
-          state.playerHealth = (state.playerHealth - card.attack).clamp(0, state.playerMaxHealth);
-          state.enemyHealth = (state.enemyHealth + card.heal).clamp(0, state.enemyMaxHealth);
-        }
+        if (card.attack > 0) _damageCommander(playerSide: !player, amount: card.attack);
+        if (card.heal > 0) _healCommander(playerSide: player, amount: card.heal);
         break;
       case CardType.equipment:
         if (ownBoard.isNotEmpty) {
@@ -230,6 +244,30 @@ class BattleEngine {
         break;
     }
     _checkWinner();
+  }
+
+  void _damageCommander({required bool playerSide, required int amount}) {
+    if (playerSide) {
+      final before = state.playerHealth;
+      state.playerHealth = (before - amount).clamp(0, state.playerMaxHealth);
+      state.events.add(BattleEvent(BattleEventKind.damage, onPlayerSide: true, amount: before - state.playerHealth));
+    } else {
+      final before = state.enemyHealth;
+      state.enemyHealth = (before - amount).clamp(0, state.enemyMaxHealth);
+      state.events.add(BattleEvent(BattleEventKind.damage, onPlayerSide: false, amount: before - state.enemyHealth));
+    }
+  }
+
+  void _healCommander({required bool playerSide, required int amount}) {
+    if (playerSide) {
+      final before = state.playerHealth;
+      state.playerHealth = (before + amount).clamp(0, state.playerMaxHealth);
+      state.events.add(BattleEvent(BattleEventKind.heal, onPlayerSide: true, amount: state.playerHealth - before));
+    } else {
+      final before = state.enemyHealth;
+      state.enemyHealth = (before + amount).clamp(0, state.enemyMaxHealth);
+      state.events.add(BattleEvent(BattleEventKind.heal, onPlayerSide: false, amount: state.enemyHealth - before));
+    }
   }
 
   void _checkWinner() {

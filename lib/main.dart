@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'game/battle_screen.dart';
 import 'game/campaign_screen.dart';
 import 'game/card_collection_screen.dart';
+import 'game/fx.dart';
 import 'game/settings_screen.dart';
 
 void main() {
@@ -47,20 +48,36 @@ class FarmanRavayanApp extends StatelessWidget {
   }
 }
 
-class GameHomePage extends StatelessWidget {
+class GameHomePage extends StatefulWidget {
   const GameHomePage({super.key});
 
   @override
+  State<GameHomePage> createState() => _GameHomePageState();
+}
+
+class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  void _open(Widget page) {
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final items = <_MenuItem>[
+      _MenuItem(Icons.flag, 'آغاز کارزار', 'ده نبرد داستانی در سرزمین‌های افسانه‌ای', () => _open(const CampaignScreen())),
+      _MenuItem(Icons.style, 'مجموعه کارت‌ها', 'مشاهده ۵۰ کارت انیمیشنی در ده گروه', () => _open(const CardCollectionScreen())),
+      _MenuItem(Icons.shield, 'نبرد تمرینی', 'تمرین تاکتیک‌ها در برابر هوش مصنوعی', () => _open(const BattleScreen())),
+      _MenuItem(Icons.settings, 'تنظیمات', 'تنظیمات بازی و اطلاعات نسخه', () => _open(const SettingsScreen())),
+    ];
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF26364D), Color(0xFF101827), Color(0xFF090E18)],
-          ),
-        ),
+      body: AnimatedBackdrop(
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
@@ -68,7 +85,18 @@ class GameHomePage extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
                 children: [
-                  const Icon(Icons.shield_moon, size: 72, color: Color(0xFFD7B56D)),
+                  AnimatedBuilder(
+                    animation: _pulse,
+                    builder: (context, child) => Transform.scale(
+                      scale: 1.0 + 0.06 * _pulse.value,
+                      child: Icon(
+                        Icons.shield_moon,
+                        size: 84,
+                        color: const Color(0xFFD7B56D),
+                        shadows: [Shadow(color: const Color(0xFFD7B56D).withOpacity(0.35 + 0.4 * _pulse.value), blurRadius: 28)],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 14),
                   Text(
                     'فرمانروایان',
@@ -81,36 +109,18 @@ class GameHomePage extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white70),
                   ),
-                  const SizedBox(height: 36),
-                  _MenuTile(
-                    icon: Icons.flag,
-                    title: 'آغاز کارزار',
-                    subtitle: 'پنج نبرد داستانی در سرزمین‌های افسانه‌ای',
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CampaignScreen())),
-                  ),
-                  const SizedBox(height: 14),
-                  _MenuTile(
-                    icon: Icons.style,
-                    title: 'مجموعه کارت‌ها',
-                    subtitle: 'مشاهده و بررسی ۲۰ کارت آغازین',
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CardCollectionScreen())),
-                  ),
-                  const SizedBox(height: 14),
-                  _MenuTile(
-                    icon: Icons.shield,
-                    title: 'نبرد تمرینی',
-                    subtitle: 'تمرین تاکتیک‌ها در برابر هوش مصنوعی',
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const BattleScreen())),
-                  ),
-                  const SizedBox(height: 14),
-                  _MenuTile(
-                    icon: Icons.settings,
-                    title: 'تنظیمات',
-                    subtitle: 'تنظیمات بازی و اطلاعات نسخه',
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen())),
-                  ),
                   const SizedBox(height: 32),
-                  const Text('نسخه آزمایشی ۰.۱.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  for (var i = 0; i < items.length; i++)
+                    TweenAnimationBuilder<double>(
+                      key: ValueKey('menu$i'),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      duration: Duration(milliseconds: 400 + i * 130),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, v, child) => Opacity(opacity: v, child: Transform.translate(offset: Offset(0, 30 * (1 - v)), child: child)),
+                      child: Padding(padding: const EdgeInsets.only(bottom: 14), child: _MenuTile(item: items[i])),
+                    ),
+                  const SizedBox(height: 18),
+                  const Text('نسخه آزمایشی ۰.۲.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
@@ -121,30 +131,37 @@ class GameHomePage extends StatelessWidget {
   }
 }
 
-class _MenuTile extends StatelessWidget {
-  const _MenuTile({required this.icon, required this.title, required this.subtitle, required this.onTap});
+class _MenuItem {
+  const _MenuItem(this.icon, this.title, this.subtitle, this.onTap);
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+}
+
+class _MenuTile extends StatelessWidget {
+  const _MenuTile({required this.item});
+
+  final _MenuItem item;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       color: const Color(0xCC1B2A40),
       elevation: 2,
+      margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         side: const BorderSide(color: Color(0x665D7190)),
         borderRadius: BorderRadius.circular(18),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        leading: Icon(icon, color: const Color(0xFFD7B56D), size: 30),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle, style: const TextStyle(color: Colors.white60)),
+        leading: Icon(item.icon, color: const Color(0xFFD7B56D), size: 30),
+        title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(item.subtitle, style: const TextStyle(color: Colors.white60)),
         trailing: const Icon(Icons.chevron_left, color: Color(0xFFD7B56D)),
-        onTap: onTap,
+        onTap: item.onTap,
       ),
     );
   }

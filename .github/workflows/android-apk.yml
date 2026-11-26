@@ -37,10 +37,26 @@ jobs:
         run: flutter create --platforms=android --org=ir.farmanravayan .
 
       - name: Analyze
-        run: flutter analyze
+        run: |
+          set +e
+          flutter analyze > analyze.log 2>&1
+          code=$?
+          cat analyze.log
+          if [ $code -ne 0 ]; then
+            echo "::error title=flutter analyze::$(head -c 6000 analyze.log | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
+          fi
+          exit $code
 
       - name: Run tests
-        run: flutter test
+        run: |
+          set +e
+          flutter test --reporter expanded > test.log 2>&1
+          code=$?
+          tail -n 80 test.log
+          if [ $code -ne 0 ]; then
+            echo "::error title=flutter test::$(tail -c 6000 test.log | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
+          fi
+          exit $code
 
       - name: Build optimized test APKs
         run: flutter build apk --release --split-per-abi

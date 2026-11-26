@@ -3,8 +3,9 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:farman_ravayan/game/battle_engine.dart';
 import 'package:farman_ravayan/game/card.dart';
+import 'package:farman_ravayan/game/missions.dart';
 
-GameCard card(String id) => starterCards.firstWhere((c) => c.id == id);
+GameCard card(String id) => allCards.firstWhere((c) => c.id == id);
 
 /// An engine whose enemy has nothing to play, so tests are deterministic.
 BattleEngine quietEngine({int difficulty = 1}) {
@@ -15,9 +16,46 @@ BattleEngine quietEngine({int difficulty = 1}) {
 }
 
 void main() {
-  test('starter collection contains twenty cards across four types', () {
-    expect(starterCards, hasLength(20));
-    expect(starterCards.map((card) => card.type).toSet(), hasLength(4));
+  test('collection has fifty unique cards in ten groups of five', () {
+    expect(allCards, hasLength(50));
+    expect(allCards.map((c) => c.id).toSet(), hasLength(50));
+    expect(allCards.map((c) => c.type).toSet(), hasLength(4));
+    for (final group in CardGroup.values) {
+      expect(allCards.where((c) => c.group == group), hasLength(5), reason: group.name);
+    }
+    expect(CardGroup.values, hasLength(10));
+  });
+
+  test('there are ten story missions with unique titles and enemy decks', () {
+    expect(missions, hasLength(10));
+    expect(missions.map((m) => m.title).toSet(), hasLength(10));
+    for (final mission in missions) {
+      expect(mission.region, isNotEmpty);
+      expect(mission.enemyGroups, isNotEmpty);
+    }
+  });
+
+  test('a mission enemy deck only uses the groups of that mission', () {
+    final mission = missions[3];
+    final pool = allCards.where((c) => mission.enemyGroups.contains(c.group)).toList();
+    final engine = BattleEngine(difficulty: 4, random: Random(3), enemyPool: pool);
+    final enemyCards = [...engine.state.enemyHand, ...engine.state.enemyDeck];
+    expect(enemyCards, isNotEmpty);
+    expect(enemyCards.every((c) => mission.enemyGroups.contains(c.group)), isTrue);
+  });
+
+  test('every card is playable by the rules: spells deal or heal, equipment adds stats', () {
+    for (final card in allCards) {
+      switch (card.type) {
+        case CardType.spell:
+          expect(card.attack + card.heal, greaterThan(0), reason: card.id);
+        case CardType.equipment:
+          expect(card.attack + card.health, greaterThan(0), reason: card.id);
+        case CardType.hero:
+        case CardType.troop:
+          expect(card.health, greaterThan(0), reason: card.id);
+      }
+    }
   });
 
   test('battle begins with commanders at twenty health', () {
@@ -37,8 +75,9 @@ void main() {
 
   test('higher campaign difficulty increases enemy maximum health', () {
     final engine = BattleEngine(difficulty: 3);
-    expect(engine.state.enemyHealth, 30);
-    expect(engine.state.enemyMaxHealth, 30);
+    expect(engine.state.enemyHealth, 26);
+    expect(engine.state.enemyMaxHealth, 26);
+    expect(BattleEngine(difficulty: 10).state.enemyMaxHealth, 47);
   });
 
   test('damage spells preserve enemy health above twenty on hard missions', () {
@@ -48,7 +87,7 @@ void main() {
 
     engine.playCard(0);
 
-    expect(engine.state.enemyHealth, 27);
+    expect(engine.state.enemyHealth, 23);
     expect(engine.state.message, 'کارت «گلوله آتشین» اجرا شد.');
   });
 
@@ -74,8 +113,8 @@ void main() {
 
   test('a freshly played unit cannot attack in the turn it was played', () {
     final engine = quietEngine();
-    engine.state.hand = [card('assassin')];
-    engine.state.energy = 3;
+    engine.state.hand = [card('berserker')];
+    engine.state.energy = 4;
 
     engine.playCard(0);
     engine.endPlayerTurn();
@@ -131,6 +170,32 @@ void main() {
     expect(engine.state.isOver, isTrue);
   });
 
+  test('playing a damage spell records damage and played events', () {
+    final engine = quietEngine();
+    engine.state.hand = [card('fire')];
+    engine.state.energy = 3;
+
+    engine.playCard(0);
+
+    final kinds = engine.state.events.map((e) => e.kind).toList();
+    expect(kinds, contains(BattleEventKind.played));
+    final damage = engine.state.events.firstWhere((e) => e.kind == BattleEventKind.damage);
+    expect(damage.amount, 3);
+    expect(damage.onPlayerSide, isFalse);
+  });
+
+  test('a spell that also heals restores the casting commander', () {
+    final engine = quietEngine();
+    engine.state.playerHealth = 10;
+    engine.state.hand = [card('sacrifice')];
+    engine.state.energy = 3;
+
+    engine.playCard(0);
+
+    expect(engine.state.enemyHealth, 17);
+    expect(engine.state.playerHealth, 13);
+  });
+
   test('the enemy commander can defeat the player', () {
     final engine = quietEngine();
     engine.state.playerHealth = 2;
@@ -143,7 +208,7 @@ void main() {
 
     engine.state.playerHealth = 2;
     engine.state.enemyHand = [card('scout')];
-    engine.state.enemyBoard = [Unit(card('assassin'))..exhausted = false];
+    engine.state.enemyBoard = [Unit(card('berserker'))..exhausted = false];
     engine.endPlayerTurn();
 
     expect(engine.state.winner, Winner.enemy);
