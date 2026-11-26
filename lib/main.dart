@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'game/battle_screen.dart';
 import 'game/campaign_screen.dart';
@@ -20,6 +21,13 @@ class FarmanRavayanApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'فرمانروایان',
+      locale: const Locale('fa'),
+      supportedLocales: const [Locale('fa'), Locale('en')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: midnight,
@@ -34,10 +42,7 @@ class FarmanRavayanApp extends StatelessWidget {
           titleLarge: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-      home: const Directionality(
-        textDirection: TextDirection.rtl,
-        child: GameHomePage(),
-      ),
+      home: const GameHomePage(),
     );
   }
 }

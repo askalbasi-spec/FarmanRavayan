@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'battle_engine.dart';
 import 'card.dart';
 
@@ -15,11 +18,26 @@ class _BattleScreenState extends State<BattleScreen> {
   late BattleEngine engine;
   bool _reportedVictory = false;
   @override
-  void initState() { super.initState(); engine = BattleEngine(difficulty: widget.difficulty); }
+  void initState() { super.initState(); engine = BattleEngine(difficulty: widget.difficulty); _loadHaptics(); }
 
-  void _play(int index) { setState(() => engine.playCard(index)); _reportVictory(); }
-  void _endTurn() { setState(() => engine.endPlayerTurn()); _reportVictory(); }
-  void _reportVictory() { if (!_reportedVictory && engine.state.winner == 'شما') { _reportedVictory = true; widget.onVictory?.call(); } }
+  bool _haptics = true;
+  Future<void> _loadHaptics() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) _haptics = prefs.getBool('settings_haptics_enabled') ?? true;
+  }
+  void _buzz(bool heavy) {
+    if (!_haptics) return;
+    if (heavy) { HapticFeedback.mediumImpact(); } else { HapticFeedback.lightImpact(); }
+  }
+
+  void _play(int index) {
+    final before = engine.state.hand.length;
+    setState(() => engine.playCard(index));
+    if (engine.state.hand.length < before) _buzz(false);
+    _reportVictory();
+  }
+  void _endTurn() { setState(() => engine.endPlayerTurn()); _buzz(true); _reportVictory(); }
+  void _reportVictory() { if (!_reportedVictory && engine.state.winner == Winner.player) { _reportedVictory = true; widget.onVictory?.call(); } }
   void _restart() => setState(() => engine = BattleEngine(difficulty: widget.difficulty));
 
   @override
@@ -51,7 +69,7 @@ class _BattleScreenState extends State<BattleScreen> {
                 : ListView.separated(scrollDirection: Axis.horizontal, itemCount: game.hand.length, separatorBuilder: (_, __) => const SizedBox(width: 8), itemBuilder: (context, index) => _card(game.hand[index], index, game.energy))),
               const SizedBox(height: 8),
               SizedBox(width: double.infinity, child: game.isOver
-                ? FilledButton.icon(onPressed: _restart, icon: const Icon(Icons.replay), label: Text('شروع نبرد تازه — ${game.winner == 'شما' ? 'پیروز شدید' : 'شکست خوردید'}'))
+                ? FilledButton.icon(onPressed: _restart, icon: const Icon(Icons.replay), label: Text('شروع نبرد تازه — ${game.winner == Winner.player ? 'پیروز شدید' : 'شکست خوردید'}'))
                 : FilledButton.icon(onPressed: game.playerTurn ? _endTurn : null, icon: const Icon(Icons.skip_next), label: const Text('پایان نوبت'))),
             ]),
           ),
@@ -73,7 +91,7 @@ class _BattleScreenState extends State<BattleScreen> {
     ]),
   );
 
-  Widget _board(String title, List<GameCard> cards) => Padding(
+  Widget _board(String title, List<Unit> cards) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 12),
     child: Column(children: [
       Text(title, style: const TextStyle(color: Colors.white60, fontSize: 12)),
@@ -87,6 +105,7 @@ class _BattleScreenState extends State<BattleScreen> {
             Text(cards[i].name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
             const SizedBox(height: 5),
             Text('⚔ ${cards[i].attack}   ♥ ${cards[i].health}', style: const TextStyle(color: Color(0xFFF0D69A), fontSize: 11)),
+            if (cards[i].exhausted) const Text('تازه‌وارد', style: TextStyle(color: Colors.white38, fontSize: 9)),
           ]),
         ))),
     ]),
