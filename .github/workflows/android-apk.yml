@@ -54,7 +54,8 @@ jobs:
           code=$?
           tail -n 80 test.log
           if [ $code -ne 0 ]; then
-            echo "::error title=flutter test::$(tail -c 6000 test.log | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
+            grep -E "EXCEPTION|overflowed|relevant error-causing|creator:|Expected|Actual|Which is|Failed|failed|Error|error:|file:///home" test.log | head -60 > test.summary
+            echo "::error title=flutter test::$(head -c 6000 test.summary | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
           fi
           exit $code
 

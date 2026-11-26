@@ -66,9 +66,10 @@ class _CampaignScreenState extends State<CampaignScreen> {
     final mission = missions[index];
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: const Color(0xFF16233A),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
-      builder: (context) => Padding(
+      builder: (context) => SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
         child: Column(
           mainAxisSize: MainAxisSize.min,

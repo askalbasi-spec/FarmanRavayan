@@ -111,7 +111,12 @@ class _Stats extends StatelessWidget {
     if (card.heal > 0) {
       chips.add(_chip('✚ ${card.heal}', const Color(0xFF3FC9B5)));
     }
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: chips);
+    final spaced = <Widget>[];
+    for (var i = 0; i < chips.length; i++) {
+      if (i > 0) spaced.add(SizedBox(width: base * 0.4));
+      spaced.add(chips[i]);
+    }
+    return FittedBox(fit: BoxFit.scaleDown, child: Row(mainAxisSize: MainAxisSize.min, children: spaced));
   }
 
   Widget _chip(String text, Color color) => Container(
