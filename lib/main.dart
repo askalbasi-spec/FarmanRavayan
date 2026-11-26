@@ -8,6 +8,22 @@ import 'game/fx.dart';
 import 'game/settings_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Show the real error on screen instead of a blank or grey page.
+  ErrorWidget.builder = (details) => Material(
+        color: const Color(0xFF101827),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              'خطای نمایش: ${details.exceptionAsString()}',
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.rtl,
+              style: const TextStyle(color: Color(0xFFF0D69A), fontSize: 13),
+            ),
+          ),
+        ),
+      );
   runApp(const FarmanRavayanApp());
 }
 
