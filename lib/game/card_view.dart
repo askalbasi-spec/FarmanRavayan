@@ -73,8 +73,8 @@ class GameCardView extends StatelessWidget {
                     flex: 4,
                     child: Center(
                       child: Text(
-                        card.description,
-                        maxLines: 3,
+                        card.fullDescription,
+                        maxLines: 4,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.white70, fontSize: base * 0.85),

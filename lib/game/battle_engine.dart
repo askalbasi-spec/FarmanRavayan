@@ -79,8 +79,9 @@ class BattleState {
 }
 
 class BattleEngine {
-  BattleEngine({this.difficulty = 1, Random? random, List<GameCard>? enemyPool}) : _random = random ?? Random() {
-    final shuffled = List<GameCard>.of(allCards)..shuffle(_random);
+  BattleEngine({this.difficulty = 1, Random? random, List<GameCard>? enemyPool, List<GameCard>? playerDeck}) : _random = random ?? Random() {
+    final source = (playerDeck != null && playerDeck.length >= 8) ? playerDeck : allCards;
+    final shuffled = List<GameCard>.of(source)..shuffle(_random);
     final pool = (enemyPool == null || enemyPool.isEmpty) ? allCards : enemyPool;
     final enemyShuffled = <GameCard>[...pool, ...pool]..shuffle(_random);
     final enemyMaxHealth = 20 + ((difficulty - 1).clamp(0, 9) * 3);
@@ -241,9 +242,26 @@ class BattleEngine {
       case CardType.hero:
       case CardType.troop:
         ownBoard.add(Unit(card));
+        _battlecry(card, player);
         break;
     }
     _checkWinner();
+  }
+
+  void _battlecry(GameCard card, bool player) {
+    final info = card.ability;
+    if (info == null) return;
+    switch (info.kind) {
+      case Ability.healSelf:
+        _healCommander(playerSide: player, amount: info.amount);
+        break;
+      case Ability.draw:
+        _draw(player: player);
+        break;
+      case Ability.strikeEnemy:
+        _damageCommander(playerSide: !player, amount: info.amount);
+        break;
+    }
   }
 
   void _damageCommander({required bool playerSide, required int amount}) {

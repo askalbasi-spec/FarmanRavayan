@@ -28,7 +28,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Card(child: SwitchListTile(secondary: const Icon(Icons.vibration, color: Color(0xFFD7B56D)), title: const Text('بازخورد لمسی'), subtitle: const Text('ذخیره ترجیح بازخورد لمسی'), value: _enabled, onChanged: _change)),
       const SizedBox(height: 18),
       const Card(child: ListTile(leading: Icon(Icons.shield_moon, color: Color(0xFFD7B56D), size: 34), title: Text('فرمانروایان'), subtitle: Text('بازی کارتی راهبردی فانتزی'))),
-      const ListTile(title: Text('نسخه برنامه'), subtitle: Text('۰.۳.۰ — نسخه آزمایشی توسعه'), leading: Icon(Icons.info_outline)),
+      const ListTile(title: Text('نسخه برنامه'), subtitle: Text('۰.۴.۰ — نسخه آزمایشی توسعه'), leading: Icon(Icons.info_outline)),
       const ListTile(title: Text('وضعیت اتصال'), subtitle: Text('این نسخه برای بازی تک‌نفره و آفلاین طراحی شده است. رقابت آنلاین در نسخه‌های آینده اضافه می‌شود.'), leading: Icon(Icons.wifi_off)),
     ]),
   );

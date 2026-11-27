@@ -168,3 +168,30 @@ const allCards = <GameCard>[
   GameCard(id: 'helm', name: 'کلاه‌خود طلایی', description: '+۱ حمله و +۲ سلامت به یک نیروی میدان', type: CardType.equipment, group: CardGroup.relics, motif: ArtMotif.armor, cost: 3, attack: 1, health: 2),
   GameCard(id: 'sunCrown', name: 'تاج سپیده', description: '+۲ حمله و +۴ سلامت به یک نیروی میدان', type: CardType.equipment, group: CardGroup.relics, motif: ArtMotif.crown, cost: 5, attack: 2, health: 4),
 ];
+
+
+/// Special effects that trigger when a card is played. Keyed by card id.
+enum Ability { healSelf, draw, strikeEnemy }
+
+class AbilityInfo {
+  const AbilityInfo(this.kind, this.amount, this.text);
+
+  final Ability kind;
+  final int amount;
+  final String text;
+}
+
+const cardAbilities = <String, AbilityInfo>{
+  'medic': AbilityInfo(Ability.healSelf, 3, 'هنگام ورود: ۳ جان به فرمانده‌ات برمی‌گرداند'),
+  'scout': AbilityInfo(Ability.draw, 1, 'هنگام ورود: یک کارت می‌کشی'),
+  'messenger': AbilityInfo(Ability.draw, 1, 'هنگام ورود: یک کارت می‌کشی'),
+  'falconer': AbilityInfo(Ability.strikeEnemy, 2, 'هنگام ورود: ۲ آسیب به فرمانده دشمن'),
+  'stormcaller': AbilityInfo(Ability.strikeEnemy, 2, 'هنگام ورود: ۲ آسیب به فرمانده دشمن'),
+  'phoenix': AbilityInfo(Ability.healSelf, 2, 'هنگام ورود: ۲ جان به فرمانده‌ات برمی‌گرداند'),
+};
+
+extension GameCardAbility on GameCard {
+  AbilityInfo? get ability => cardAbilities[id];
+
+  String get fullDescription => ability == null ? description : '$description\n${ability!.text}';
+}

@@ -7,6 +7,7 @@ import 'game/battle_screen.dart';
 import 'game/card.dart';
 import 'game/card_art.dart';
 import 'game/card_view.dart';
+import 'game/deck_builder_screen.dart';
 import 'game/missions.dart';
 import 'game/profile.dart';
 import 'game/campaign_screen.dart';
@@ -171,27 +172,37 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                     ),
                   ),
                   const SizedBox(height: 16),
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.15,
-                    children: [
-                      _Reveal(index: 4, child: _GridTile(icon: Icons.shield, title: 'نبرد تمرینی', subtitle: 'تمرین در برابر دشمن', onTap: () => _open(const BattleScreen()))),
-                      _Reveal(index: 5, child: _GridTile(icon: Icons.style, title: 'مجموعه کارت‌ها', subtitle: '۵۰ کارت انیمیشنی', onTap: () => _open(const CardCollectionScreen()))),
-                      _Reveal(index: 6, child: _GridTile(icon: Icons.menu_book, title: 'راهنمای بازی', subtitle: 'قوانین در شش گام', onTap: () => _open(const TutorialScreen()))),
-                      _Reveal(index: 7, child: _GridTile(icon: Icons.settings, title: 'تنظیمات', subtitle: 'صدا، لرزش و نسخه', onTap: () => _open(const SettingsScreen()))),
-                    ],
+                  _Reveal(
+                    index: 4,
+                    child: Row(
+                      children: [
+                        Expanded(child: _GridTile(icon: Icons.shield, title: 'نبرد تمرینی', subtitle: 'تمرین در برابر دشمن', onTap: () => _open(const BattleScreen()))),
+                        const SizedBox(width: 12),
+                        Expanded(child: _GridTile(icon: Icons.style, title: 'مجموعه کارت‌ها', subtitle: '۵۰ کارت انیمیشنی', onTap: () => _open(const CardCollectionScreen()))),
+                      ],
+                    ),
                   ),
+                  const SizedBox(height: 12),
+                  _Reveal(
+                    index: 5,
+                    child: Row(
+                      children: [
+                        Expanded(child: _GridTile(icon: Icons.dashboard_customize, title: 'ساخت دسته‌ی کارت', subtitle: 'دسته‌ی دلخواهت را بچین', onTap: () => _open(const DeckBuilderScreen()))),
+                        const SizedBox(width: 12),
+                        Expanded(child: _GridTile(icon: Icons.menu_book, title: 'راهنمای بازی', subtitle: 'قوانین در شش گام', onTap: () => _open(const TutorialScreen()))),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _Reveal(index: 6, child: _GridTile(icon: Icons.settings, title: 'تنظیمات', subtitle: 'لرزش و اطلاعات نسخه', onTap: () => _open(const SettingsScreen()))),
                   const SizedBox(height: 16),
-                  const Text('نسخه آزمایشی ۰.۳.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  const Text('نسخه آزمایشی ۰.۴.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
           ),
         ),
+      ),
       ),
     );
   }
@@ -391,7 +402,9 @@ class _GridTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    return SizedBox(
+      height: 112,
+      child: Material(
       color: const Color(0xCC1B2A40),
       shape: RoundedRectangleBorder(side: const BorderSide(color: Color(0x665D7190)), borderRadius: BorderRadius.circular(18)),
       child: InkWell(
@@ -404,11 +417,12 @@ class _GridTile extends StatelessWidget {
             children: [
               Icon(icon, color: const Color(0xFFD7B56D), size: 32),
               const SizedBox(height: 6),
-              Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(title, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
               Text(subtitle, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white60, fontSize: 11)),
             ],
           ),
         ),
+      ),
       ),
     );
   }

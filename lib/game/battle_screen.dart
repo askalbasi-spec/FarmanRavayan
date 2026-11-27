@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'battle_engine.dart';
 import 'card.dart';
+import 'deck.dart';
 import 'card_view.dart';
 import 'fx.dart';
 
@@ -66,7 +67,7 @@ class _BattleScreenState extends State<BattleScreen> with SingleTickerProviderSt
   BattleEngine _newEngine() {
     final groups = widget.enemyGroups;
     final pool = groups == null ? null : allCards.where((c) => groups.contains(c.group)).toList();
-    return BattleEngine(difficulty: widget.difficulty, enemyPool: pool);
+    return BattleEngine(difficulty: widget.difficulty, enemyPool: pool, playerDeck: DeckStore.cached);
   }
 
   Future<void> _loadHaptics() async {

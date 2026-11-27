@@ -51,6 +51,7 @@ jobs:
         run: |
           set +e
           flutter test --reporter expanded > test.log 2>&1
+          grep -E "SIM difficulty" test.log | while read -r l; do echo "::notice title=balance::$l"; done
           code=$?
           tail -n 80 test.log
           if [ $code -ne 0 ]; then
