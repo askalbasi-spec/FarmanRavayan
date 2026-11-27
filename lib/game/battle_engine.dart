@@ -84,14 +84,14 @@ class BattleEngine {
     final shuffled = List<GameCard>.of(source)..shuffle(_random);
     final basePool = (enemyPool == null || enemyPool.isEmpty) ? allCards : enemyPool;
     // Early missions only face cheaper cards so beginners can win.
-    final capped = basePool.where((c) => c.cost <= difficulty + 3).toList();
+    final capped = basePool.where((c) => c.cost <= difficulty + 2).toList();
     final pool = capped.length >= 8 ? capped : basePool;
     final enemyShuffled = <GameCard>[...pool, ...pool]..shuffle(_random);
     final enemyMaxHealth = 20 + ((difficulty - 1).clamp(0, 9) * 3);
     state = BattleState(
-      playerHealth: 20,
+      playerHealth: 30,
       enemyHealth: enemyMaxHealth,
-      playerMaxHealth: 20,
+      playerMaxHealth: 30,
       enemyMaxHealth: enemyMaxHealth,
       energy: 1,
       maxEnergy: 1,

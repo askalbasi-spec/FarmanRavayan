@@ -58,9 +58,9 @@ void main() {
     }
   });
 
-  test('battle begins with commanders at twenty health', () {
+  test('battle begins with thirty health for the player and twenty for the enemy', () {
     final engine = BattleEngine(random: Random(1));
-    expect(engine.state.playerHealth, 20);
+    expect(engine.state.playerHealth, 30);
     expect(engine.state.enemyHealth, 20);
     expect(engine.state.hand, hasLength(4));
     expect(engine.state.enemyHand, hasLength(3));
