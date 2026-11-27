@@ -86,7 +86,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
             FilledButton.icon(
               onPressed: canBuy ? _buy : null,
               icon: const Icon(Icons.monetization_on),
-              label: Text('خرید بسته — ${Economy.packPrice} سکه'),
+              label: const Text('خرید بسته — ${Economy.packPrice} سکه'),
               style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
             ),
             if (Economy.coins < Economy.packPrice)
