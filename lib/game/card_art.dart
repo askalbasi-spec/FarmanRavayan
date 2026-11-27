@@ -181,6 +181,29 @@ class _AvatarArtState extends State<AvatarArt> with SingleTickerProviderStateMix
   }
 }
 
+/// A round animated token for a unit on the battlefield.
+class MotifOrb extends StatelessWidget {
+  const MotifOrb({super.key, required this.card, required this.size, required this.animation});
+
+  final GameCard card;
+  final double size;
+  final Animation<double> animation;
+
+  @override
+  Widget build(BuildContext context) {
+    final option = AvatarOption(card.name, card.motif, card.group);
+    return SizedBox(
+      width: size,
+      height: size,
+      child: ClipOval(
+        child: RepaintBoundary(
+          child: CustomPaint(painter: _AvatarPainter(option: option, animation: animation), size: Size.infinite),
+        ),
+      ),
+    );
+  }
+}
+
 class _AvatarPainter extends CustomPainter {
   _AvatarPainter({required this.option, required this.animation}) : super(repaint: animation);
 

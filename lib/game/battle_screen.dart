@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'battle_engine.dart';
 import 'card.dart';
+import 'arena.dart';
 import 'audio.dart';
 import 'deck.dart';
 import 'profile.dart';
@@ -40,8 +41,10 @@ class BattleScreen extends StatefulWidget {
   State<BattleScreen> createState() => _BattleScreenState();
 }
 
-class _BattleScreenState extends State<BattleScreen> with SingleTickerProviderStateMixin {
+class _BattleScreenState extends State<BattleScreen> with TickerProviderStateMixin {
   late BattleEngine engine;
+  late final AnimationController _lunge = AnimationController(vsync: this, duration: const Duration(milliseconds: 520));
+  bool _lungeSide = true;
   late final AnimationController _art = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
   bool _reportedVictory = false;
   bool _busy = false;
@@ -64,6 +67,7 @@ class _BattleScreenState extends State<BattleScreen> with SingleTickerProviderSt
   @override
   void dispose() {
     _art.dispose();
+    _lunge.dispose();
     super.dispose();
   }
 
@@ -100,8 +104,21 @@ class _BattleScreenState extends State<BattleScreen> with SingleTickerProviderSt
     if (_busy) return;
     setState(() => engine.endPlayerTurn());
     _buzz(true);
+    if (engine.state.playerBoard.isNotEmpty || engine.state.enemyBoard.isNotEmpty) await _lungeAnim(true);
     await _replayEvents();
+    if (mounted && !engine.state.isOver && engine.state.enemyBoard.isNotEmpty) await _lungeAnim(false);
     _reportVictory();
+  }
+
+  Future<void> _lungeAnim(bool playerSide) async {
+    if (!mounted) return;
+    setState(() {
+      _lungeSide = playerSide;
+      _busy = true;
+    });
+    _lunge.forward(from: 0);
+    await Future<void>.delayed(const Duration(milliseconds: 540));
+    if (mounted) setState(() => _busy = false);
   }
 
   Future<void> _replayEvents() async {
@@ -195,19 +212,13 @@ class _BattleScreenState extends State<BattleScreen> with SingleTickerProviderSt
                 children: [
                   _commander(widget.enemyName ?? 'فرمانده دشمن', game.enemyHealth, game.enemyMaxHealth, game.enemyHand.length, true, _flashEnemy),
                   Expanded(
-                    child: Center(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            _board('میدان دشمن', game.enemyBoard),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 6),
-                              child: Icon(Icons.auto_awesome, color: _gold, size: 22),
-                            ),
-                            _board('میدان شما', game.playerBoard),
-                          ],
-                        ),
-                      ),
+                    child: ArenaView(
+                      enemy: game.enemyBoard,
+                      player: game.playerBoard,
+                      animation: _art,
+                      lunge: _lunge,
+                      lungeSide: _lungeSide,
+                      difficulty: widget.difficulty,
                     ),
                   ),
                   _commander('فرمانده شما', game.playerHealth, game.playerMaxHealth, game.hand.length, false, _flashPlayer),
@@ -401,33 +412,4 @@ class _BattleScreenState extends State<BattleScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _board(String title, List<Unit> units) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Column(
-        children: [
-          Text(title, style: const TextStyle(color: Colors.white60, fontSize: 12)),
-          const SizedBox(height: 4),
-          SizedBox(
-            height: 118,
-            child: units.isEmpty
-                ? const Center(child: Text('هنوز نیرویی در میدان نیست', style: TextStyle(color: Colors.white30, fontSize: 11)))
-                : ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: units.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 7),
-                    itemBuilder: (_, i) => TweenAnimationBuilder<double>(
-                      key: ObjectKey(units[i]),
-                      tween: Tween(begin: 0.0, end: 1.0),
-                      duration: const Duration(milliseconds: 320),
-                      curve: Curves.easeOutBack,
-                      builder: (context, v, child) => Transform.scale(scale: v.clamp(0.0, 1.2), child: child),
-                      child: UnitView(unit: units[i], animation: _art),
-                    ),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
 }

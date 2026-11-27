@@ -213,7 +213,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                   const SizedBox(height: 12),
                   _Reveal(index: 6, child: _GridTile(icon: Icons.settings, title: 'تنظیمات', subtitle: 'لرزش و اطلاعات نسخه', onTap: () => _open(const SettingsScreen()))),
                   const SizedBox(height: 16),
-                  const Text('نسخه آزمایشی ۰.۶.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  const Text('نسخه آزمایشی ۰.۷.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
