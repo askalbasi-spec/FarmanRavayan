@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'card.dart';
-import 'card_art.dart';
 import 'card_view.dart';
 import 'deck.dart';
 import 'fx.dart';
