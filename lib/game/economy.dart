@@ -25,7 +25,7 @@ class Economy {
 
   static Set<String> starterIds() {
     final sorted = List<GameCard>.of(allCards)..sort((a, b) => a.cost.compareTo(b.cost));
-    final cheap = allCards.where((c) => c.cost <= 2).length;
+    final cheap = allCards.where((c) => c.cost <= 3).length;
     return sorted.take(max(cheap, 12)).map((c) => c.id).toSet();
   }
 

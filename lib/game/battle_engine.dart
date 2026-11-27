@@ -82,7 +82,10 @@ class BattleEngine {
   BattleEngine({this.difficulty = 1, Random? random, List<GameCard>? enemyPool, List<GameCard>? playerDeck}) : _random = random ?? Random() {
     final source = (playerDeck != null && playerDeck.length >= 8) ? playerDeck : allCards;
     final shuffled = List<GameCard>.of(source)..shuffle(_random);
-    final pool = (enemyPool == null || enemyPool.isEmpty) ? allCards : enemyPool;
+    final basePool = (enemyPool == null || enemyPool.isEmpty) ? allCards : enemyPool;
+    // Early missions only face cheaper cards so beginners can win.
+    final capped = basePool.where((c) => c.cost <= difficulty + 3).toList();
+    final pool = capped.length >= 8 ? capped : basePool;
     final enemyShuffled = <GameCard>[...pool, ...pool]..shuffle(_random);
     final enemyMaxHealth = 20 + ((difficulty - 1).clamp(0, 9) * 3);
     state = BattleState(

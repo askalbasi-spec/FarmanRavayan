@@ -64,10 +64,12 @@ class _BattleScreenState extends State<BattleScreen> with TickerProviderStateMix
     super.initState();
     engine = _newEngine();
     _loadHaptics();
+    GameAudio.startMusic('battle');
   }
 
   @override
   void dispose() {
+    GameAudio.startMusic('music');
     _art.dispose();
     _lunge.dispose();
     super.dispose();

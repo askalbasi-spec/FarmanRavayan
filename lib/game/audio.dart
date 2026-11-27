@@ -14,6 +14,7 @@ class GameAudio {
   static bool _loaded = false;
   static bool _musicPlaying = false;
   static AudioPlayer? _music;
+  static String _track = 'music';
 
   static Future<void> load() async {
     try {
@@ -39,7 +40,7 @@ class GameAudio {
       await prefs.setBool(musicKey, value);
     } catch (_) {}
     if (value) {
-      await startMusic();
+      await startMusic(_track);
     } else {
       await stopMusic();
     }
@@ -56,14 +57,21 @@ class GameAudio {
     } catch (_) {}
   }
 
-  static Future<void> startMusic() async {
+  /// Starts the looping background track: 'music' (menus) or 'battle'.
+  static Future<void> startMusic([String track = 'music']) async {
     if (!_loaded) await load();
-    if (!musicOn || _musicPlaying) return;
+    if (!musicOn) {
+      _track = track;
+      return;
+    }
+    if (_musicPlaying && _track == track) return;
     try {
+      _track = track;
       _musicPlaying = true;
       final player = _music ??= AudioPlayer();
+      await player.stop();
       await player.setReleaseMode(ReleaseMode.loop);
-      await player.play(AssetSource('audio/music.wav'), volume: 0.28);
+      await player.play(AssetSource('audio/$track.wav'), volume: track == 'battle' ? 0.4 : 0.28);
     } catch (_) {
       _musicPlaying = false;
     }
@@ -81,7 +89,7 @@ class GameAudio {
       if (_music != null && _musicPlaying) {
         await _music!.resume();
       } else {
-        await startMusic();
+        await startMusic(_track);
       }
     } catch (_) {}
   }

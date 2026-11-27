@@ -37,6 +37,10 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
 
   Future<void> _buy() async {
     if (_busy) return;
+    if (Economy.coins < Economy.packPrice) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('سکه‌ی کافی نیست: ${Economy.coins} از ${Economy.packPrice}. با بردن نبرد و جایزه‌ی روزانه سکه جمع کن.')));
+      return;
+    }
     setState(() => _busy = true);
     final pulls = await Economy.buyPack();
     if (!mounted) return;
@@ -49,7 +53,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final canBuy = Economy.coins >= Economy.packPrice && !_busy;
+    final canBuy = !_busy;
     return Scaffold(
       appBar: AppBar(title: const Text('فروشگاه'), backgroundColor: const Color(0xFF182438)),
       body: AnimatedBackdrop(

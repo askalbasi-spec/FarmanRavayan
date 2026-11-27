@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:farman_ravayan/game/battle_engine.dart';
 import 'package:farman_ravayan/game/card.dart';
 import 'package:farman_ravayan/game/deck.dart';
+import 'package:farman_ravayan/game/economy.dart';
 
 GameCard card(String id) => allCards.firstWhere((c) => c.id == id);
 
@@ -58,12 +59,13 @@ void main() {
   });
 
   test('balance simulation: every game ends and win rates are reported', () {
-    for (final difficulty in [1, 4, 7, 10]) {
+    final starter = DeckStore.fromIds(Economy.starterIds());
+    for (final difficulty in [1, 2, 3, 4, 7, 10]) {
       var wins = 0;
       var unfinished = 0;
       const games = 80;
       for (var g = 0; g < games; g++) {
-        final engine = BattleEngine(difficulty: difficulty, random: Random(difficulty * 1000 + g));
+        final engine = BattleEngine(difficulty: difficulty, random: Random(difficulty * 1000 + g), playerDeck: starter);
         var turns = 0;
         while (!engine.state.isOver && turns < 80) {
           var played = true;
@@ -92,7 +94,7 @@ void main() {
         }
       }
       // ignore: avoid_print
-      print('SIM difficulty=$difficulty wins=$wins/$games unfinished=$unfinished');
+      print('SIM starter-deck difficulty=$difficulty wins=$wins/$games unfinished=$unfinished');
       expect(wins + unfinished <= games, isTrue);
     }
   });
