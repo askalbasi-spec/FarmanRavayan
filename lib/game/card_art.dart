@@ -119,6 +119,108 @@ class _CardArtState extends State<CardArt> with SingleTickerProviderStateMixin {
   }
 }
 
+class AvatarOption {
+  const AvatarOption(this.label, this.motif, this.group);
+
+  final String label;
+  final ArtMotif motif;
+  final CardGroup group;
+}
+
+/// Fantasy portraits a player can choose from.
+const avatarOptions = <AvatarOption>[
+  AvatarOption('شوالیه', ArtMotif.sword, CardGroup.infantry),
+  AvatarOption('کماندار', ArtMotif.bow, CardGroup.archers),
+  AvatarOption('جادوگر', ArtMotif.wizard, CardGroup.mages),
+  AvatarOption('اژدها', ArtMotif.dragon, CardGroup.beasts),
+  AvatarOption('ققنوس', ArtMotif.bird, CardGroup.battleSpells),
+  AvatarOption('پادشاه', ArtMotif.crown, CardGroup.heroes),
+  AvatarOption('شفابخش', ArtMotif.heal, CardGroup.blessings),
+  AvatarOption('نگهبان', ArtMotif.shield, CardGroup.relics),
+];
+
+/// A round animated portrait for the player profile.
+class AvatarArt extends StatefulWidget {
+  const AvatarArt({super.key, required this.index, this.size = 72, this.animation});
+
+  final int index;
+  final double size;
+  final Animation<double>? animation;
+
+  @override
+  State<AvatarArt> createState() => _AvatarArtState();
+}
+
+class _AvatarArtState extends State<AvatarArt> with SingleTickerProviderStateMixin {
+  AnimationController? _own;
+
+  Animation<double> get _animation {
+    final shared = widget.animation;
+    if (shared != null) return shared;
+    return _own ??= AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final option = avatarOptions[widget.index.clamp(0, avatarOptions.length - 1)];
+    return SizedBox(
+      width: widget.size,
+      height: widget.size,
+      child: ClipOval(
+        child: RepaintBoundary(
+          child: CustomPaint(painter: _AvatarPainter(option: option, animation: _animation), size: Size.infinite),
+        ),
+      ),
+    );
+  }
+}
+
+class _AvatarPainter extends CustomPainter {
+  _AvatarPainter({required this.option, required this.animation}) : super(repaint: animation);
+
+  final AvatarOption option;
+  final Animation<double> animation;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final t = animation.value;
+    final a = option.group.primary;
+    final b = option.group.secondary;
+    final rect = Offset.zero & size;
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(0, -0.2),
+          radius: 0.9,
+          colors: [Color.lerp(b, a, 0.45)!, b, const Color(0xFF05070C)],
+          stops: const [0.0, 0.65, 1.0],
+        ).createShader(rect),
+    );
+    final unit = min(size.width, size.height) * 0.33;
+    canvas.save();
+    canvas.translate(size.width / 2, size.height / 2 + sin(t * 2 * pi) * unit * 0.05);
+    canvas.scale(unit);
+    canvas.drawCircle(
+      Offset.zero,
+      1.2,
+      Paint()
+        ..shader = RadialGradient(colors: [a.withOpacity(0.5), a.withOpacity(0.0)]).createShader(Rect.fromCircle(center: Offset.zero, radius: 1.2)),
+    );
+    _Motifs.draw(canvas, option.motif, t, a, b);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _AvatarPainter oldDelegate) => oldDelegate.option != option;
+}
+
 class _ArtPainter extends CustomPainter {
   _ArtPainter({required this.card, required this.animation}) : super(repaint: animation);
 

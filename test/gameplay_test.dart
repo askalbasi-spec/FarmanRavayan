@@ -17,7 +17,8 @@ Future<void> settle(WidgetTester tester, {int seconds = 3}) async {
 }
 
 void main() {
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  profileTests();
+  setUp(() => SharedPreferences.setMockInitialValues({'profile_setup_done': true}));
 
   testWidgets('practice battle opens and a full turn can be played', (tester) async {
     phoneScreen(tester);
@@ -90,5 +91,25 @@ void main() {
     await tester.tap(find.text('تنظیمات'));
     await settle(tester, seconds: 1);
     expect(tester.takeException(), isNull);
+  });
+}
+
+void profileTests() {
+  testWidgets('first launch asks for a name and avatar, then shows them', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    phoneScreen(tester);
+    await tester.pumpWidget(const FarmanRavayanApp());
+    await settle(tester, seconds: 1);
+
+    expect(find.text('به فرمانروایان خوش آمدی'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'اسماعیل');
+    await tester.tap(find.text('اژدها'));
+    await tester.pump();
+    await tester.tap(find.text('ذخیره'));
+    await settle(tester, seconds: 1);
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('اسماعیل'), findsOneWidget);
+    expect(find.text('درجه: سرباز'), findsOneWidget);
   });
 }

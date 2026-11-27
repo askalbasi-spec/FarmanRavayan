@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:farman_ravayan/main.dart';
 
 Future<void> openCollection(WidgetTester tester) async {
+  SharedPreferences.setMockInitialValues({'profile_setup_done': true});
+  tester.view.physicalSize = const Size(1080, 2340);
+  tester.view.devicePixelRatio = 3.0;
+  addTearDown(tester.view.reset);
   await tester.pumpWidget(const FarmanRavayanApp());
   await tester.pump(const Duration(milliseconds: 900));
   await tester.tap(find.text('مجموعه کارت‌ها'));
@@ -12,6 +17,10 @@ Future<void> openCollection(WidgetTester tester) async {
 
 void main() {
   testWidgets('home screen shows the game title and main sections', (tester) async {
+    SharedPreferences.setMockInitialValues({'profile_setup_done': true});
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(const FarmanRavayanApp());
     await tester.pump(const Duration(milliseconds: 900));
 
