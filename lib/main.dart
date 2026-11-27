@@ -81,21 +81,33 @@ class GameHomePage extends StatefulWidget {
   State<GameHomePage> createState() => _GameHomePageState();
 }
 
-class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderStateMixin {
+class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   static const _gold = Color(0xFFF0D69A);
   late final AnimationController _anim = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
   PlayerProfile _profile = const PlayerProfile(setupDone: true);
   int _completed = 0;
+  BattleStats _stats = const BattleStats();
 
   @override
   void initState() {
     super.initState();
     _load(firstRun: true);
     GameAudio.startMusic();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      GameAudio.resumeFromBackground();
+    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive || state == AppLifecycleState.hidden) {
+      GameAudio.pauseForBackground();
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _anim.dispose();
     super.dispose();
   }
@@ -103,8 +115,10 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
   Future<void> _load({bool firstRun = false}) async {
     final profile = await ProfileStore.load();
     final completed = await ProfileStore.completedMissions();
+    final stats = await ProfileStore.loadStats();
     if (!mounted) return;
     setState(() {
+      _stats = stats;
       _profile = profile;
       _completed = completed;
     });
@@ -149,7 +163,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                 children: [
                   _Reveal(
                     index: 0,
-                    child: _ProfileHeader(profile: _profile, completed: _completed, total: total, animation: _anim, onEdit: _editProfile),
+                    child: _ProfileHeader(profile: _profile, stats: _stats, completed: _completed, total: total, animation: _anim, onEdit: _editProfile),
                   ),
                   const SizedBox(height: 18),
                   _Reveal(
@@ -199,7 +213,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                   const SizedBox(height: 12),
                   _Reveal(index: 6, child: _GridTile(icon: Icons.settings, title: 'تنظیمات', subtitle: 'لرزش و اطلاعات نسخه', onTap: () => _open(const SettingsScreen()))),
                   const SizedBox(height: 16),
-                  const Text('نسخه آزمایشی ۰.۵.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  const Text('نسخه آزمایشی ۰.۶.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
@@ -230,9 +244,10 @@ class _Reveal extends StatelessWidget {
 }
 
 class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader({required this.profile, required this.completed, required this.total, required this.animation, required this.onEdit});
+  const _ProfileHeader({required this.profile, required this.stats, required this.completed, required this.total, required this.animation, required this.onEdit});
 
   final PlayerProfile profile;
+  final BattleStats stats;
   final int completed;
   final int total;
   final Animation<double> animation;
@@ -289,7 +304,9 @@ class _ProfileHeader extends StatelessWidget {
                   decoration: BoxDecoration(color: const Color(0x33D7B56D), borderRadius: BorderRadius.circular(10)),
                   child: Text('درجه: ${rankFor(completed)}', style: const TextStyle(fontSize: 12, color: Color(0xFFF0D69A))),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
+                Text('نبردها: ${stats.played} · پیروزی: ${stats.won}', style: const TextStyle(fontSize: 12, color: Colors.white60)),
+                const SizedBox(height: 6),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(6),
                   child: TweenAnimationBuilder<double>(

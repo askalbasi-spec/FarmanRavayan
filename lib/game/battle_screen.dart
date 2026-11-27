@@ -6,6 +6,7 @@ import 'battle_engine.dart';
 import 'card.dart';
 import 'audio.dart';
 import 'deck.dart';
+import 'profile.dart';
 import 'card_view.dart';
 import 'fx.dart';
 
@@ -131,6 +132,7 @@ class _BattleScreenState extends State<BattleScreen> with SingleTickerProviderSt
     if (mounted) setState(() => _busy = false);
     if (!_resultSounded && engine.state.winner != null) {
       _resultSounded = true;
+      ProfileStore.recordBattle(won: engine.state.winner == Winner.player);
       GameAudio.sfx(engine.state.winner == Winner.player ? 'win' : 'lose');
     }
   }

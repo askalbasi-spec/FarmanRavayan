@@ -44,6 +44,23 @@ class ProfileStore {
     } catch (_) {}
   }
 
+  static Future<BattleStats> loadStats() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return BattleStats(played: prefs.getInt('stats_played') ?? 0, won: prefs.getInt('stats_won') ?? 0);
+    } catch (_) {
+      return const BattleStats();
+    }
+  }
+
+  static Future<void> recordBattle({required bool won}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('stats_played', (prefs.getInt('stats_played') ?? 0) + 1);
+      if (won) await prefs.setInt('stats_won', (prefs.getInt('stats_won') ?? 0) + 1);
+    } catch (_) {}
+  }
+
   static Future<int> completedMissions() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -52,6 +69,13 @@ class ProfileStore {
       return 0;
     }
   }
+}
+
+class BattleStats {
+  const BattleStats({this.played = 0, this.won = 0});
+
+  final int played;
+  final int won;
 }
 
 /// A rank title that grows with campaign progress.

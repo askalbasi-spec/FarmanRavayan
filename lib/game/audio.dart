@@ -69,6 +69,23 @@ class GameAudio {
     }
   }
 
+  static Future<void> pauseForBackground() async {
+    try {
+      await _music?.pause();
+    } catch (_) {}
+  }
+
+  static Future<void> resumeFromBackground() async {
+    if (!musicOn) return;
+    try {
+      if (_music != null && _musicPlaying) {
+        await _music!.resume();
+      } else {
+        await startMusic();
+      }
+    } catch (_) {}
+  }
+
   static Future<void> stopMusic() async {
     _musicPlaying = false;
     try {
