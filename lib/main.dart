@@ -203,7 +203,6 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
           ),
         ),
       ),
-      ),
     );
   }
 }
