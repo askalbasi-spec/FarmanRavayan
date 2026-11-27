@@ -177,7 +177,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                     physics: const NeverScrollableScrollPhysics(),
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    childAspectRatio: 1.35,
+                    childAspectRatio: 1.15,
                     children: [
                       _Reveal(index: 4, child: _GridTile(icon: Icons.shield, title: 'نبرد تمرینی', subtitle: 'تمرین در برابر دشمن', onTap: () => _open(const BattleScreen()))),
                       _Reveal(index: 5, child: _GridTile(icon: Icons.style, title: 'مجموعه کارت‌ها', subtitle: '۵۰ کارت انیمیشنی', onTap: () => _open(const CardCollectionScreen()))),
