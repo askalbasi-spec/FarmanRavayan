@@ -75,9 +75,9 @@ void main() {
 
   test('higher campaign difficulty increases enemy maximum health', () {
     final engine = BattleEngine(difficulty: 3);
-    expect(engine.state.enemyHealth, 26);
-    expect(engine.state.enemyMaxHealth, 26);
-    expect(BattleEngine(difficulty: 10).state.enemyMaxHealth, 47);
+    expect(engine.state.enemyHealth, 24);
+    expect(engine.state.enemyMaxHealth, 24);
+    expect(BattleEngine(difficulty: 10).state.enemyMaxHealth, 38);
   });
 
   test('damage spells preserve enemy health above twenty on hard missions', () {
@@ -87,7 +87,7 @@ void main() {
 
     engine.playCard(0);
 
-    expect(engine.state.enemyHealth, 23);
+    expect(engine.state.enemyHealth, 21);
     expect(engine.state.message, 'کارت «گلوله آتشین» اجرا شد.');
   });
 

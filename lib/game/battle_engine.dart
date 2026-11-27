@@ -87,7 +87,7 @@ class BattleEngine {
     final capped = basePool.where((c) => c.cost <= difficulty + 2).toList();
     final pool = capped.length >= 8 ? capped : basePool;
     final enemyShuffled = <GameCard>[...pool, ...pool]..shuffle(_random);
-    final enemyMaxHealth = 20 + ((difficulty - 1).clamp(0, 9) * 3);
+    final enemyMaxHealth = 20 + ((difficulty - 1).clamp(0, 9) * 2);
     state = BattleState(
       playerHealth: 30,
       enemyHealth: enemyMaxHealth,
@@ -149,7 +149,7 @@ class BattleEngine {
   void _enemyTurn() {
     state.message = 'فرمانده دشمن در حال حرکت است...';
     // Harder missions give the enemy extra energy.
-    var budget = (state.maxEnergy + (difficulty >= 10 ? 3 : (difficulty >= 7 ? 2 : (difficulty >= 4 ? 1 : 0)))).clamp(1, 10);
+    var budget = (state.maxEnergy + (difficulty >= 10 ? 3 : (difficulty >= 8 ? 2 : (difficulty >= 5 ? 1 : 0)))).clamp(1, 10);
     while (!state.isOver) {
       final playable = state.enemyHand
           .where((c) => c.cost <= budget && _canPlay(c, state.enemyBoard))
