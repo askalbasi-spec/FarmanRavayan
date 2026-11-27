@@ -146,7 +146,7 @@ class BattleEngine {
   void _enemyTurn() {
     state.message = 'فرمانده دشمن در حال حرکت است...';
     // Harder missions give the enemy extra energy.
-    var budget = (state.maxEnergy + (difficulty >= 8 ? 2 : (difficulty >= 4 ? 1 : 0))).clamp(1, 10);
+    var budget = (state.maxEnergy + (difficulty >= 10 ? 3 : (difficulty >= 7 ? 2 : (difficulty >= 4 ? 1 : 0)))).clamp(1, 10);
     while (!state.isOver) {
       final playable = state.enemyHand
           .where((c) => c.cost <= budget && _canPlay(c, state.enemyBoard))
