@@ -70,7 +70,8 @@ void main() {
     await tester.pumpWidget(const FarmanRavayanApp());
     await settle(tester, seconds: 1);
 
-    await tester.ensureVisible(find.text('راهنمای بازی'));
+    await tester.scrollUntilVisible(find.text('راهنمای بازی'), 200, scrollable: find.byType(Scrollable).first);
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text('راهنمای بازی'));
     await settle(tester, seconds: 1);
     expect(find.text('هدف بازی'), findsOneWidget);
