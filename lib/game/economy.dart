@@ -82,6 +82,10 @@ class Economy {
       pulls.add(PackPull(card, isNew));
     }
     await _save();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('stats_packs', (prefs.getInt('stats_packs') ?? 0) + 1);
+    } catch (_) {}
     return pulls;
   }
 }

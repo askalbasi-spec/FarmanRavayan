@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'game/achievements_screen.dart';
 import 'game/audio.dart';
 import 'game/battle_screen.dart';
 import 'game/card.dart';
@@ -13,6 +14,7 @@ import 'game/economy.dart';
 import 'game/shop_screen.dart';
 import 'game/missions.dart';
 import 'game/profile.dart';
+import 'game/rewards.dart';
 import 'game/campaign_screen.dart';
 import 'game/card_collection_screen.dart';
 import 'game/fx.dart';
@@ -89,6 +91,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
   PlayerProfile _profile = const PlayerProfile(setupDone: true);
   int _completed = 0;
   BattleStats _stats = const BattleStats();
+  DailyStatus _daily = const DailyStatus(canClaim: false, streak: 0, reward: 0);
 
   @override
   void initState() {
@@ -119,8 +122,10 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
     final completed = await ProfileStore.completedMissions();
     final stats = await ProfileStore.loadStats();
     await Economy.load();
+    final daily = await DailyReward.status();
     if (!mounted) return;
     setState(() {
+      _daily = daily;
       _stats = stats;
       _profile = profile;
       _completed = completed;
@@ -142,6 +147,22 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
     }
     await ProfileStore.save(result);
     if (mounted) setState(() => _profile = result);
+  }
+
+  Future<void> _claimDaily() async {
+    final result = await DailyReward.claim();
+    if (!mounted) return;
+    GameAudio.sfx(result == null ? 'tap' : 'win');
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF16233A),
+        title: Text(result == null ? 'امروز را گرفته‌ای' : 'جایزه‌ی روزانه!', style: const TextStyle(color: _gold, fontWeight: FontWeight.w900)),
+        content: Text(result == null ? 'فردا دوباره بیا؛ هر روز پشت‌سرهم جایزه‌ی بیشتری می‌گیری.' : '${result.reward} سکه گرفتی.\nروزهای پشت‌سرهم: ${result.streak}\nتا هفت روز جایزه هر روز بیشتر می‌شود.'),
+        actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('باشه'))],
+      ),
+    );
+    if (mounted) _load();
   }
 
   Future<void> _open(Widget page) async {
@@ -224,8 +245,19 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                       ],
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  _Reveal(
+                    index: 7,
+                    child: Row(
+                      children: [
+                        Expanded(child: _GridTile(icon: Icons.military_tech, title: 'دستاوردها', subtitle: 'مدال و سکه‌ی پاداش', onTap: () => _open(const AchievementsScreen()))),
+                        const SizedBox(width: 12),
+                        Expanded(child: _GridTile(icon: Icons.card_giftcard, title: 'جایزه‌ی روزانه', subtitle: _daily.canClaim ? 'آماده‌ی دریافت! ${_daily.reward} سکه' : 'امروز گرفته شد', onTap: _claimDaily, highlight: _daily.canClaim)),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  const Text('نسخه آزمایشی ۰.۸.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  const Text('نسخه آزمایشی ۰.۹.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
@@ -424,20 +456,21 @@ class _PlayButton extends StatelessWidget {
 }
 
 class _GridTile extends StatelessWidget {
-  const _GridTile({required this.icon, required this.title, required this.subtitle, required this.onTap});
+  const _GridTile({required this.icon, required this.title, required this.subtitle, required this.onTap, this.highlight = false});
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final bool highlight;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 112,
       child: Material(
-      color: const Color(0xCC1B2A40),
-      shape: RoundedRectangleBorder(side: const BorderSide(color: Color(0x665D7190)), borderRadius: BorderRadius.circular(18)),
+      color: highlight ? const Color(0xDD4A3A12) : const Color(0xCC1B2A40),
+      shape: RoundedRectangleBorder(side: BorderSide(color: highlight ? const Color(0xFFF0D69A) : const Color(0x665D7190)), borderRadius: BorderRadius.circular(18)),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
         onTap: onTap,
