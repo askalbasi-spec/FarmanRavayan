@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'card.dart';
 import 'card_art.dart';
 import 'card_view.dart';
+import 'economy.dart';
 import 'fx.dart';
 
 const _gold = Color(0xFFF0D69A);
@@ -17,6 +18,14 @@ class CardCollectionScreen extends StatefulWidget {
 class _CardCollectionScreenState extends State<CardCollectionScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _art = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
   CardGroup? _filter;
+
+  @override
+  void initState() {
+    super.initState();
+    Economy.load().then((_) {
+      if (mounted) setState(() {});
+    });
+  }
 
   @override
   void dispose() {
@@ -56,7 +65,12 @@ class _CardCollectionScreenState extends State<CardCollectionScreen> with Single
                   final card = cards[index];
                   return GestureDetector(
                     onTap: () => _showCard(card),
-                    child: GameCardView(card: card, animation: _art),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(child: GameCardView(card: card, animation: _art, dimmed: !Economy.owns(card))),
+                        if (!Economy.owns(card)) const Positioned.fill(child: Center(child: Icon(Icons.lock, color: Colors.white70, size: 40))),
+                      ],
+                    ),
                   );
                 },
               ),

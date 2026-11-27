@@ -7,6 +7,7 @@ import 'card.dart';
 import 'arena.dart';
 import 'audio.dart';
 import 'deck.dart';
+import 'economy.dart';
 import 'profile.dart';
 import 'card_view.dart';
 import 'fx.dart';
@@ -50,6 +51,7 @@ class _BattleScreenState extends State<BattleScreen> with TickerProviderStateMix
   bool _busy = false;
   bool _haptics = true;
   bool _resultSounded = false;
+  int _reward = 0;
   BattleEvent? _showcase;
   int _showcaseKey = 0;
   final List<_Floating> _floating = [];
@@ -74,7 +76,7 @@ class _BattleScreenState extends State<BattleScreen> with TickerProviderStateMix
   BattleEngine _newEngine() {
     final groups = widget.enemyGroups;
     final pool = groups == null ? null : allCards.where((c) => groups.contains(c.group)).toList();
-    return BattleEngine(difficulty: widget.difficulty, enemyPool: pool, playerDeck: DeckStore.cached);
+    return BattleEngine(difficulty: widget.difficulty, enemyPool: pool, playerDeck: DeckStore.cached ?? Economy.ownedCards);
   }
 
   Future<void> _loadHaptics() async {
@@ -149,7 +151,11 @@ class _BattleScreenState extends State<BattleScreen> with TickerProviderStateMix
     if (mounted) setState(() => _busy = false);
     if (!_resultSounded && engine.state.winner != null) {
       _resultSounded = true;
-      ProfileStore.recordBattle(won: engine.state.winner == Winner.player);
+      final won = engine.state.winner == Winner.player;
+      ProfileStore.recordBattle(won: won);
+      _reward = won ? Economy.winReward : Economy.lossReward;
+      Economy.earn(_reward);
+      if (mounted) setState(() {});
       GameAudio.sfx(engine.state.winner == Winner.player ? 'win' : 'lose');
     }
   }
@@ -190,6 +196,7 @@ class _BattleScreenState extends State<BattleScreen> with TickerProviderStateMix
       engine = _newEngine();
       _reportedVictory = false;
       _resultSounded = false;
+      _reward = 0;
       _busy = false;
       _showcase = null;
       _floating.clear();
@@ -297,6 +304,17 @@ class _BattleScreenState extends State<BattleScreen> with TickerProviderStateMix
               Text(won ? 'پیروزی!' : 'شکست', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: won ? _gold : Colors.redAccent)),
               const SizedBox(height: 8),
               Text(game.message, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70)),
+              if (_reward > 0) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.monetization_on, color: Color(0xFFFFC94D), size: 20),
+                    const SizedBox(width: 6),
+                    Text('پاداش: $_reward سکه', style: const TextStyle(color: _gold, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ],
               const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,

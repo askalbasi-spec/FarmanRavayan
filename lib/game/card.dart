@@ -195,3 +195,31 @@ extension GameCardAbility on GameCard {
 
   String get fullDescription => ability == null ? description : '$description\n${ability!.text}';
 }
+
+
+enum Rarity { common, rare, epic, legendary }
+
+extension GameCardRarity on GameCard {
+  Rarity get rarity {
+    if (cost >= 7) return Rarity.legendary;
+    if (cost >= 5) return Rarity.epic;
+    if (cost >= 3) return Rarity.rare;
+    return Rarity.common;
+  }
+}
+
+extension RarityInfo on Rarity {
+  String get label => const {
+        Rarity.common: 'معمولی',
+        Rarity.rare: 'کمیاب',
+        Rarity.epic: 'حماسی',
+        Rarity.legendary: 'افسانه‌ای',
+      }[this]!;
+
+  int get color => const {
+        Rarity.common: 0xFFB0BAC8,
+        Rarity.rare: 0xFF4DA3FF,
+        Rarity.epic: 0xFFB06BFF,
+        Rarity.legendary: 0xFFFFC94D,
+      }[this]!;
+}

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'card.dart';
 import 'card_view.dart';
 import 'deck.dart';
+import 'economy.dart';
 import 'fx.dart';
 
 const _gold = Color(0xFFF0D69A);
@@ -22,8 +23,8 @@ class _DeckBuilderScreenState extends State<DeckBuilderScreen> with SingleTicker
   @override
   void initState() {
     super.initState();
-    DeckStore.loadIds().then((ids) {
-      if (mounted) setState(() => _chosen.addAll(ids));
+    Economy.load().then((_) => DeckStore.loadIds()).then((ids) {
+      if (mounted) setState(() => _chosen.addAll(ids.where(Economy.owned.contains)));
     });
   }
 
@@ -34,6 +35,7 @@ class _DeckBuilderScreenState extends State<DeckBuilderScreen> with SingleTicker
   }
 
   void _toggle(GameCard card) {
+    if (!Economy.owns(card)) return;
     setState(() {
       if (_chosen.contains(card.id)) {
         _chosen.remove(card.id);
@@ -44,7 +46,7 @@ class _DeckBuilderScreenState extends State<DeckBuilderScreen> with SingleTicker
   }
 
   void _autoFill() {
-    final shuffled = List<GameCard>.of(allCards)..shuffle();
+    final shuffled = Economy.ownedCards..shuffle();
     setState(() {
       _chosen
         ..clear()
@@ -96,7 +98,8 @@ class _DeckBuilderScreenState extends State<DeckBuilderScreen> with SingleTicker
                     onTap: () => _toggle(card),
                     child: Stack(
                       children: [
-                        Positioned.fill(child: GameCardView(card: card, animation: _art, dimmed: !on)),
+                        Positioned.fill(child: GameCardView(card: card, animation: _art, dimmed: !on || !Economy.owns(card))),
+                        if (!Economy.owns(card)) const Positioned.fill(child: Center(child: Icon(Icons.lock, color: Colors.white70, size: 40))),
                         if (on) const Positioned(top: 6, left: 6, child: CircleAvatar(radius: 14, backgroundColor: _gold, child: Icon(Icons.check, color: Colors.black, size: 18))),
                       ],
                     ),

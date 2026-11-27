@@ -9,6 +9,8 @@ import 'game/card.dart';
 import 'game/card_art.dart';
 import 'game/card_view.dart';
 import 'game/deck_builder_screen.dart';
+import 'game/economy.dart';
+import 'game/shop_screen.dart';
 import 'game/missions.dart';
 import 'game/profile.dart';
 import 'game/campaign_screen.dart';
@@ -116,6 +118,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
     final profile = await ProfileStore.load();
     final completed = await ProfileStore.completedMissions();
     final stats = await ProfileStore.loadStats();
+    await Economy.load();
     if (!mounted) return;
     setState(() {
       _stats = stats;
@@ -211,9 +214,18 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _Reveal(index: 6, child: _GridTile(icon: Icons.settings, title: 'تنظیمات', subtitle: 'لرزش و اطلاعات نسخه', onTap: () => _open(const SettingsScreen()))),
+                  _Reveal(
+                    index: 6,
+                    child: Row(
+                      children: [
+                        Expanded(child: _GridTile(icon: Icons.storefront, title: 'فروشگاه', subtitle: '${Economy.coins} سکه · بسته‌ی کارت', onTap: () => _open(const ShopScreen()))),
+                        const SizedBox(width: 12),
+                        Expanded(child: _GridTile(icon: Icons.settings, title: 'تنظیمات', subtitle: 'صدا، لرزش و نسخه', onTap: () => _open(const SettingsScreen()))),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  const Text('نسخه آزمایشی ۰.۷.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  const Text('نسخه آزمایشی ۰.۸.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
