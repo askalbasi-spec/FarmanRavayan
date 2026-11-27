@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'battle_engine.dart';
 import 'card.dart';
+import 'audio.dart';
 import 'deck.dart';
 import 'card_view.dart';
 import 'fx.dart';
@@ -44,6 +45,7 @@ class _BattleScreenState extends State<BattleScreen> with SingleTickerProviderSt
   bool _reportedVictory = false;
   bool _busy = false;
   bool _haptics = true;
+  bool _resultSounded = false;
   BattleEvent? _showcase;
   int _showcaseKey = 0;
   final List<_Floating> _floating = [];
@@ -110,6 +112,7 @@ class _BattleScreenState extends State<BattleScreen> with SingleTickerProviderSt
       if (!mounted) return;
       switch (event.kind) {
         case BattleEventKind.played:
+          GameAudio.sfx('card');
           setState(() {
             _showcase = event;
             _showcaseKey++;
@@ -118,12 +121,18 @@ class _BattleScreenState extends State<BattleScreen> with SingleTickerProviderSt
           if (!mounted) return;
           setState(() => _showcase = null);
         case BattleEventKind.damage:
+          if (event.amount > 0) GameAudio.sfx('hit');
           if (event.amount > 0) await _popup('-${event.amount}', Colors.redAccent, event.onPlayerSide, flash: true);
         case BattleEventKind.heal:
+          if (event.amount > 0) GameAudio.sfx('heal');
           if (event.amount > 0) await _popup('+${event.amount}', const Color(0xFF5CF0B8), event.onPlayerSide);
       }
     }
     if (mounted) setState(() => _busy = false);
+    if (!_resultSounded && engine.state.winner != null) {
+      _resultSounded = true;
+      GameAudio.sfx(engine.state.winner == Winner.player ? 'win' : 'lose');
+    }
   }
 
   Future<void> _popup(String text, Color color, bool onPlayerSide, {bool flash = false}) async {
@@ -161,6 +170,7 @@ class _BattleScreenState extends State<BattleScreen> with SingleTickerProviderSt
     setState(() {
       engine = _newEngine();
       _reportedVictory = false;
+      _resultSounded = false;
       _busy = false;
       _showcase = null;
       _floating.clear();

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'game/audio.dart';
 import 'game/battle_screen.dart';
 import 'game/card.dart';
 import 'game/card_art.dart';
@@ -90,6 +91,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _load(firstRun: true);
+    GameAudio.startMusic();
   }
 
   @override
@@ -126,6 +128,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
   }
 
   Future<void> _open(Widget page) async {
+    GameAudio.sfx('tap');
     await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
     if (mounted) _load();
   }
@@ -196,7 +199,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                   const SizedBox(height: 12),
                   _Reveal(index: 6, child: _GridTile(icon: Icons.settings, title: 'تنظیمات', subtitle: 'لرزش و اطلاعات نسخه', onTap: () => _open(const SettingsScreen()))),
                   const SizedBox(height: 16),
-                  const Text('نسخه آزمایشی ۰.۴.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  const Text('نسخه آزمایشی ۰.۵.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
