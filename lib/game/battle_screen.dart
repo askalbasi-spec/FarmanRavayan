@@ -328,7 +328,7 @@ class _BattleScreenState extends State<BattleScreen> with TickerProviderStateMix
                           if (mounted) setState(() => _doubled = true);
                         },
                       );
-                      if (problem != null && mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(problem)));
+                      if (problem != null && mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(duration: const Duration(seconds: 9), content: Text(problem)));
                     },
                     icon: const Icon(Icons.ondemand_video, size: 18),
                     label: const Text('دو برابر کردن پاداش با تبلیغ'),

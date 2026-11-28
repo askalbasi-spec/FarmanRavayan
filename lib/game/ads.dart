@@ -22,6 +22,10 @@ class AdsService {
   static bool get configured => appId.isNotEmpty && rewardedId.isNotEmpty;
 
   static bool _started = false;
+  static bool _loaded = false;
+
+  /// The last error the ad network reported, shown to help find problems.
+  static String lastError = '';
   static int Function()? _pendingReward;
   static void Function(int)? _onGranted;
 
@@ -30,8 +34,8 @@ class AdsService {
     try {
       AdiveryPlugin.initialize(appId);
       AdiveryPlugin.addListener(
-        onError: (placement, error) {},
-        onRewardedLoaded: (placement) {},
+        onError: (placement, error) => lastError = error,
+        onRewardedLoaded: (placement) => _loaded = true,
         onRewardedClosed: (placement, isRewarded) => _closed(isRewarded),
       );
       AdiveryPlugin.prepareRewardedAd(rewardedId);
@@ -46,6 +50,7 @@ class AdsService {
     final callback = _onGranted;
     _pendingReward = null;
     _onGranted = null;
+    _loaded = false;
     try {
       AdiveryPlugin.prepareRewardedAd(rewardedId);
     } catch (_) {}
@@ -89,10 +94,20 @@ class AdsService {
     init();
     if (await remaining() <= 0) return 'سهمیه‌ی تبلیغ امروز تمام شد. فردا دوباره بیا.';
     try {
-      final loaded = await AdiveryPlugin.isLoaded(rewardedId);
-      if (loaded != true) {
+      var ready = _loaded || (await AdiveryPlugin.isLoaded(rewardedId)) == true;
+      if (!ready) {
+        lastError = '';
         AdiveryPlugin.prepareRewardedAd(rewardedId);
-        return 'تبلیغی آماده نیست؛ چند ثانیه بعد دوباره امتحان کن.';
+        // Give the network up to about 10 seconds to deliver an ad.
+        for (var i = 0; i < 20 && !ready; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+          ready = _loaded || (await AdiveryPlugin.isLoaded(rewardedId)) == true;
+          if (!ready && lastError.isNotEmpty && i >= 2) break;
+        }
+      }
+      if (!ready) {
+        final detail = lastError.isEmpty ? 'پاسخی از آدیوری نیامد' : lastError;
+        return 'تبلیغی آماده نیست؛ چند دقیقه بعد دوباره امتحان کن.\nپیام آدیوری: $detail';
       }
       _pendingReward = reward;
       _onGranted = onGranted;

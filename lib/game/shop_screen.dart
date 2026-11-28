@@ -48,7 +48,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$coins سکه گرفتی!')));
       },
     );
-    if (problem != null && mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(problem)));
+    if (problem != null && mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(duration: const Duration(seconds: 9), content: Text(problem)));
   }
 
   Future<void> _buyCoins(CoinPack pack) async {
