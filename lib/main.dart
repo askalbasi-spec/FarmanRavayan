@@ -14,6 +14,7 @@ import 'game/card.dart';
 import 'game/card_art.dart';
 import 'game/card_view.dart';
 import 'game/deck_builder_screen.dart';
+import 'game/duel_screen.dart';
 import 'game/economy.dart';
 import 'game/shop_screen.dart';
 import 'game/missions.dart';
@@ -273,8 +274,13 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                       ],
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  _Reveal(
+                    index: 9,
+                    child: _GridTile(icon: Icons.people, title: 'دو نفره (یک گوشی)', subtitle: 'دو بازیکن، به نوبت روی یک گوشی', onTap: () => _open(const DuelScreen())),
+                  ),
                   const SizedBox(height: 16),
-                  const Text('نسخه آزمایشی ۰.۱۲.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  const Text('نسخه آزمایشی ۰.۱۳.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
