@@ -280,7 +280,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                     child: _GridTile(icon: Icons.people, title: 'دو نفره (یک گوشی)', subtitle: 'دو بازیکن، به نوبت روی یک گوشی', onTap: () => _open(const DuelScreen())),
                   ),
                   const SizedBox(height: 16),
-                  const Text('نسخه آزمایشی ۰.۱۳.۱', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  const Text('نسخه آزمایشی ۰.۱۴.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
