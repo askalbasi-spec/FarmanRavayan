@@ -36,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Card(child: SwitchListTile(secondary: const Icon(Icons.music_note, color: Color(0xFFD7B56D)), title: const Text('موسیقی پس‌زمینه'), subtitle: const Text('آهنگ آرام فانتزی'), value: _music, onChanged: (v) { setState(() => _music = v); GameAudio.setMusic(v); })),
       const SizedBox(height: 18),
       const Card(child: ListTile(leading: Icon(Icons.shield_moon, color: Color(0xFFD7B56D), size: 34), title: Text('فرمانروایان'), subtitle: Text('بازی کارتی راهبردی فانتزی'))),
-      const ListTile(title: Text('نسخه برنامه'), subtitle: Text('۰.۱۰.۰ — نسخه آزمایشی توسعه'), leading: Icon(Icons.info_outline)),
+      const ListTile(title: Text('نسخه برنامه'), subtitle: Text('۰.۱۱.۰ — نسخه آزمایشی توسعه'), leading: Icon(Icons.info_outline)),
       const ListTile(title: Text('وضعیت اتصال'), subtitle: Text('این نسخه برای بازی تک‌نفره و آفلاین طراحی شده است. رقابت آنلاین در نسخه‌های آینده اضافه می‌شود.'), leading: Icon(Icons.wifi_off)),
     ]),
   );

@@ -2,6 +2,7 @@ import 'package:flutter_poolakey/flutter_poolakey.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'economy.dart';
+import 'themes.dart';
 
 /// A coin pack sold through Cafe Bazaar. The [productId] must match the
 /// product ID defined in the Bazaar developer panel exactly.
@@ -18,6 +19,8 @@ const coinPacks = <CoinPack>[
   CoinPack('coins_350', 350, 'صندوق سکه'),
   CoinPack('coins_900', 900, 'گنج سکه'),
 ];
+
+const themeBundleId = 'themes_all';
 
 enum BillingStatus { success, cancelled, unavailable, failed }
 
@@ -92,6 +95,12 @@ class BillingService {
   /// Gives the coins for one purchase exactly once, then consumes it so the
   /// same pack can be bought again.
   static Future<void> _fulfil(PurchaseInfo info) async {
+    if (info.productId == themeBundleId) {
+      // A one-time purchase: unlock the themes and keep it unconsumed so it
+      // can be restored later.
+      await ThemeStore.unlockAll();
+      return;
+    }
     final pack = _packFor(info.productId);
     if (pack == null) return;
     final credited = await _credited();
@@ -103,6 +112,23 @@ class BillingService {
     try {
       await FlutterPoolakey.consume(info.purchaseToken);
     } catch (_) {}
+  }
+
+  static Future<BillingResult> buyThemeBundle() async {
+    if (!configured) {
+      return const BillingResult(BillingStatus.unavailable, 'پرداخت درون‌برنامه‌ای هنوز فعال نشده است.');
+    }
+    if (!await _connect()) {
+      return const BillingResult(BillingStatus.unavailable, 'اتصال به کافه‌بازار برقرار نشد. برنامه‌ی بازار نصب و وارد حساب باشد.');
+    }
+    try {
+      final info = await FlutterPoolakey.purchase(themeBundleId, payload: 'themes', dynamicPriceToken: '');
+      await _fulfil(info);
+      return const BillingResult(BillingStatus.success, 'همه‌ی تم‌ها باز شد.');
+    } catch (e) {
+      if (e.toString().toLowerCase().contains('cancel')) return const BillingResult(BillingStatus.cancelled, 'خرید لغو شد.');
+      return const BillingResult(BillingStatus.failed, 'خرید کامل نشد.');
+    }
   }
 
   static Future<BillingResult> buy(CoinPack pack) async {
@@ -131,7 +157,7 @@ class BillingService {
     try {
       final purchases = await FlutterPoolakey.getAllPurchasedProducts();
       for (final info in purchases) {
-        if (_packFor(info.productId) == null) continue;
+        if (_packFor(info.productId) == null && info.productId != themeBundleId) continue;
         await _fulfil(info);
         count++;
       }

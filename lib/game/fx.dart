@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import 'themes.dart';
+
 /// Deep-night gradient with slowly drifting, twinkling stars.
 class AnimatedBackdrop extends StatefulWidget {
   const AnimatedBackdrop({super.key, required this.child});
@@ -23,18 +25,19 @@ class _AnimatedBackdropState extends State<AnimatedBackdrop> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeStore.current;
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF26364D), Color(0xFF101827), Color(0xFF090E18)],
+          colors: [theme.top, theme.middle, theme.bottom],
         ),
       ),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          RepaintBoundary(child: CustomPaint(painter: _StarPainter(_controller))),
+          RepaintBoundary(child: CustomPaint(painter: _StarPainter(_controller, theme))),
           widget.child,
         ],
       ),
@@ -43,9 +46,10 @@ class _AnimatedBackdropState extends State<AnimatedBackdrop> with SingleTickerPr
 }
 
 class _StarPainter extends CustomPainter {
-  _StarPainter(this.animation) : super(repaint: animation);
+  _StarPainter(this.animation, this.theme) : super(repaint: animation);
 
   final Animation<double> animation;
+  final GameTheme theme;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -53,15 +57,16 @@ class _StarPainter extends CustomPainter {
     for (var i = 0; i < 70; i++) {
       final x = size.width * (((i * 53) % 100) / 100.0);
       final speed = 0.3 + (i % 5) * 0.12;
-      final y = size.height * (1.0 - ((((i * 29) % 100) / 100.0) + t * speed) % 1.0);
+      final base = ((((i * 29) % 100) / 100.0) + t * speed) % 1.0;
+      final y = size.height * (theme.fall ? base : 1.0 - base);
       final twinkle = 0.35 + 0.65 * (0.5 + 0.5 * sin(t * 2 * pi * (3 + i % 4) + i));
       final radius = 0.6 + (i % 4) * 0.4;
-      canvas.drawCircle(Offset(x, y), radius, Paint()..color = const Color(0xFFF0D69A).withOpacity(0.55 * twinkle));
+      canvas.drawCircle(Offset(x, y), radius, Paint()..color = theme.particle.withOpacity(0.55 * twinkle));
     }
   }
 
   @override
-  bool shouldRepaint(covariant _StarPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _StarPainter oldDelegate) => oldDelegate.theme != theme;
 }
 
 /// A number that rises and fades, used for damage and healing.

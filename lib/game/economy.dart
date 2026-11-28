@@ -55,6 +55,14 @@ class Economy {
     await _save();
   }
 
+  /// Spends coins if the balance allows it.
+  static Future<bool> spend(int amount) async {
+    if (coins < amount) return false;
+    coins -= amount;
+    await _save();
+    return true;
+  }
+
   static Rarity _roll(Random random) {
     final v = random.nextInt(100);
     if (v < 60) return Rarity.common;

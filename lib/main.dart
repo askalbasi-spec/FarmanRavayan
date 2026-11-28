@@ -5,6 +5,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'game/achievements_screen.dart';
 import 'game/audio.dart';
+import 'game/backup_screen.dart';
+import 'game/themes.dart';
+import 'game/themes_screen.dart';
 import 'game/battle_screen.dart';
 import 'game/card.dart';
 import 'game/card_art.dart';
@@ -122,6 +125,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
     final completed = await ProfileStore.completedMissions();
     final stats = await ProfileStore.loadStats();
     await Economy.load();
+    await ThemeStore.load();
     final daily = await DailyReward.status();
     if (!mounted) return;
     setState(() {
@@ -256,8 +260,19 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                       ],
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  _Reveal(
+                    index: 8,
+                    child: Row(
+                      children: [
+                        Expanded(child: _GridTile(icon: Icons.palette, title: 'تم‌های فانتزی', subtitle: 'پنج دنیای جادویی', onTap: () => _open(const ThemesScreen()))),
+                        const SizedBox(width: 12),
+                        Expanded(child: _GridTile(icon: Icons.cloud_upload, title: 'پشتیبان‌گیری', subtitle: 'ذخیره و بازیابی پیشرفت', onTap: () => _open(const BackupScreen()))),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  const Text('نسخه آزمایشی ۰.۱۰.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  const Text('نسخه آزمایشی ۰.۱۱.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
