@@ -69,6 +69,22 @@ jobs:
           sed -i 's/android:label="[^"]*"/android:label="فرمانروایان"/' android/app/src/main/AndroidManifest.xml
           grep -n "android:label" android/app/src/main/AndroidManifest.xml
 
+      - name: Disable R8 shrinking (ad SDK is not compatible with it)
+        run: |
+          python3 - <<'PY'
+          import glob, re
+          for f in glob.glob('android/app/build.gradle*'):
+              s = open(f).read()
+              if f.endswith('.kts'):
+                  add = '            isMinifyEnabled = false\n            isShrinkResources = false\n'
+              else:
+                  add = '            minifyEnabled false\n            shrinkResources false\n'
+              s, n = re.subn(r'(buildTypes\s*\{\s*(?:getByName\("release"\)|release)\s*\{\n)', lambda m: m.group(1) + add, s, count=1)
+              open(f, 'w').write(s)
+              print('patched', f, n)
+              print(s[s.find('buildTypes'):][:400])
+          PY
+
       - name: Configure release signing (only when the keystore secret exists)
         if: env.HAS_KEYSTORE == 'true'
         env:
