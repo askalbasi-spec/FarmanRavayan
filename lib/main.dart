@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'game/achievements_screen.dart';
+import 'game/ads.dart';
 import 'game/audio.dart';
 import 'game/backup_screen.dart';
 import 'game/themes.dart';
@@ -101,6 +102,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
     super.initState();
     _load(firstRun: true);
     GameAudio.startMusic();
+    AdsService.init();
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -272,7 +274,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text('نسخه آزمایشی ۰.۱۱.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  const Text('نسخه آزمایشی ۰.۱۲.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),

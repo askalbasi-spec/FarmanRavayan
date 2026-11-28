@@ -118,7 +118,7 @@ jobs:
       - name: Build optimized test APKs
         run: |
           set +e
-          flutter build apk --release --split-per-abi --dart-define=BAZAAR_RSA_KEY=${{ secrets.BAZAAR_RSA_KEY }} > build.log 2>&1
+          flutter build apk --release --split-per-abi --dart-define=BAZAAR_RSA_KEY=${{ secrets.BAZAAR_RSA_KEY }} --dart-define=ADIVERY_APP_ID=${{ secrets.ADIVERY_APP_ID }} --dart-define=ADIVERY_REWARDED_ID=${{ secrets.ADIVERY_REWARDED_ID }} > build.log 2>&1
           code=$?
           tail -n 40 build.log
           if [ $code -ne 0 ]; then
@@ -131,7 +131,7 @@ jobs:
         if: env.HAS_KEYSTORE == 'true' && github.ref == 'refs/heads/main'
         run: |
           set +e
-          flutter build apk --release --dart-define=BAZAAR_RSA_KEY=${{ secrets.BAZAAR_RSA_KEY }} > store.log 2>&1
+          flutter build apk --release --dart-define=BAZAAR_RSA_KEY=${{ secrets.BAZAAR_RSA_KEY }} --dart-define=ADIVERY_APP_ID=${{ secrets.ADIVERY_APP_ID }} --dart-define=ADIVERY_REWARDED_ID=${{ secrets.ADIVERY_REWARDED_ID }} > store.log 2>&1
           code=$?
           tail -n 30 store.log
           if [ $code -ne 0 ]; then
