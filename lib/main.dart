@@ -257,7 +257,7 @@ class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderSt
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text('نسخه آزمایشی ۰.۹.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  const Text('نسخه آزمایشی ۰.۱۰.۰', textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),

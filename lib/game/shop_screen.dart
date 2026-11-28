@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'audio.dart';
+import 'billing.dart';
 import 'card.dart';
 import 'card_view.dart';
 import 'economy.dart';
@@ -24,7 +25,8 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    Economy.load().then((_) {
+    Economy.load().then((_) async {
+      await BillingService.recoverPending();
       if (mounted) setState(() {});
     });
   }
@@ -33,6 +35,16 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
   void dispose() {
     _anim.dispose();
     super.dispose();
+  }
+
+  Future<void> _buyCoins(CoinPack pack) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final result = await BillingService.buy(pack);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (result.status == BillingStatus.success) GameAudio.sfx('win');
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.message.isEmpty ? 'خرید انجام نشد.' : result.message)));
   }
 
   Future<void> _buy() async {
@@ -99,6 +111,19 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                 child: Text('سکه‌ی کافی نداری؛ با بردن نبردها سکه جمع کن.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60)),
               ),
             const SizedBox(height: 20),
+            const Text('خرید سکه', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: _gold)),
+            const SizedBox(height: 8),
+            for (final pack in coinPacks)
+              Card(
+                color: const Color(0xCC1B2A40),
+                child: ListTile(
+                  leading: const Icon(Icons.monetization_on, color: Color(0xFFFFC94D), size: 32),
+                  title: Text('${pack.title} — ${pack.coins} سکه', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(BillingService.configured ? 'پرداخت امن با کافه‌بازار' : 'به‌زودی با کافه‌بازار فعال می‌شود', style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                  trailing: FilledButton(onPressed: _busy ? null : () => _buyCoins(pack), child: const Text('خرید')),
+                ),
+              ),
+            const SizedBox(height: 12),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(14),

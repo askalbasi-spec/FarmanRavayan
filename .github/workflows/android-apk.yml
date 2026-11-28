@@ -36,6 +36,20 @@ jobs:
       - name: Generate Android platform files
         run: flutter create --platforms=android --org=ir.farmanravayan .
 
+      - name: Allow JitPack (Cafe Bazaar billing library)
+        run: |
+          python3 - <<'PY'
+          import glob
+          for f in glob.glob('android/build.gradle*'):
+              s = open(f).read()
+              if 'jitpack' in s:
+                  continue
+              add = 'maven { url = uri("https://jitpack.io") }' if f.endswith('.kts') else "maven { url 'https://jitpack.io' }"
+              s = s.replace('mavenCentral()', 'mavenCentral()\n        ' + add)
+              open(f, 'w').write(s)
+              print('patched', f)
+          PY
+
       - name: Analyze
         run: |
           set +e
@@ -61,7 +75,7 @@ jobs:
           exit $code
 
       - name: Build optimized test APKs
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release --split-per-abi --dart-define=BAZAAR_RSA_KEY=${{ secrets.BAZAAR_RSA_KEY }}
 
       - name: Publish test APK
         if: github.event_name != 'pull_request'

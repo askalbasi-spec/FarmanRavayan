@@ -1,7 +1,7 @@
 name: farman_ravayan
 description: Fantasy strategic card game for Android.
 publish_to: "none"
-version: 0.9.0+9
+version: 0.10.0+10
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -13,6 +13,7 @@ dependencies:
     sdk: flutter
   shared_preferences: ^2.5.3
   audioplayers: ^6.1.0
+  flutter_poolakey: ^2.2.0+1.0.0
 
 dev_dependencies:
   flutter_test:
