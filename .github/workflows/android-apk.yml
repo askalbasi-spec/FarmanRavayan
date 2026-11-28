@@ -36,6 +36,14 @@ jobs:
       - name: Generate Android platform files
         run: flutter create --platforms=android --org=ir.farmanravayan .
 
+      - name: Show Poolakey plugin gradle file
+        run: |
+          f=$(ls -d $HOME/.pub-cache/hosted/pub.dev/flutter_poolakey-*/android/build.gradle* | head -1)
+          echo "$f"
+          cat "$f"
+          echo "::notice title=poolakey-gradle::$(cat $f | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
+          ls $HOME/.pub-cache/hosted/pub.dev/flutter_poolakey-*/android/
+
       - name: Allow JitPack (Cafe Bazaar billing library)
         run: |
           python3 - <<'PY'
