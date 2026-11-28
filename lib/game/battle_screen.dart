@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'battle_engine.dart';
 import 'card.dart';
+import 'ads.dart';
 import 'arena.dart';
 import 'audio.dart';
 import 'deck.dart';
@@ -52,6 +53,7 @@ class _BattleScreenState extends State<BattleScreen> with TickerProviderStateMix
   bool _haptics = true;
   bool _resultSounded = false;
   int _reward = 0;
+  bool _doubled = false;
   BattleEvent? _showcase;
   int _showcaseKey = 0;
   final List<_Floating> _floating = [];
@@ -199,6 +201,7 @@ class _BattleScreenState extends State<BattleScreen> with TickerProviderStateMix
       _reportedVictory = false;
       _resultSounded = false;
       _reward = 0;
+      _doubled = false;
       _busy = false;
       _showcase = null;
       _floating.clear();
@@ -316,6 +319,21 @@ class _BattleScreenState extends State<BattleScreen> with TickerProviderStateMix
                     Text('پاداش: $_reward سکه', style: const TextStyle(color: _gold, fontWeight: FontWeight.bold)),
                   ],
                 ),
+                if (AdsService.configured && !_doubled)
+                  TextButton.icon(
+                    onPressed: () async {
+                      final problem = await AdsService.show(
+                        reward: () => _reward,
+                        onGranted: (coins) {
+                          if (mounted) setState(() => _doubled = true);
+                        },
+                      );
+                      if (problem != null && mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(problem)));
+                    },
+                    icon: const Icon(Icons.ondemand_video, size: 18),
+                    label: const Text('دو برابر کردن پاداش با تبلیغ'),
+                  ),
+                if (_doubled) const Text('پاداش دو برابر شد!', style: TextStyle(color: Color(0xFF5CF0B8))),
               ],
               const SizedBox(height: 18),
               SizedBox(

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import 'ads.dart';
 import 'audio.dart';
 import 'billing.dart';
 import 'card.dart';
@@ -35,6 +36,19 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
   void dispose() {
     _anim.dispose();
     super.dispose();
+  }
+
+  Future<void> _watchAd() async {
+    final problem = await AdsService.show(
+      reward: () => AdsService.shopReward,
+      onGranted: (coins) {
+        if (!mounted) return;
+        GameAudio.sfx('win');
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$coins سکه گرفتی!')));
+      },
+    );
+    if (problem != null && mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(problem)));
   }
 
   Future<void> _buyCoins(CoinPack pack) async {
@@ -110,6 +124,18 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                 padding: EdgeInsets.only(top: 8),
                 child: Text('سکه‌ی کافی نداری؛ با بردن نبردها سکه جمع کن.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60)),
               ),
+            if (AdsService.configured) ...[
+              const SizedBox(height: 14),
+              Card(
+                color: const Color(0xCC1B2A40),
+                child: ListTile(
+                  leading: const Icon(Icons.ondemand_video, color: Color(0xFF5CF0B8), size: 32),
+                  title: const Text('سکه‌ی رایگان با تماشای تبلیغ'),
+                  subtitle: const Text('هر تبلیغ ۲۰ سکه؛ تا ۶ بار در روز', style: TextStyle(color: Colors.white60, fontSize: 12)),
+                  trailing: FilledButton(onPressed: _watchAd, child: const Text('تماشا')),
+                ),
+              ),
+            ],
             const SizedBox(height: 20),
             const Text('خرید سکه', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: _gold)),
             const SizedBox(height: 8),

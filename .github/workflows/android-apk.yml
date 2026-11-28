@@ -69,6 +69,22 @@ jobs:
           sed -i 's/android:label="[^"]*"/android:label="فرمانروایان"/' android/app/src/main/AndroidManifest.xml
           grep -n "android:label" android/app/src/main/AndroidManifest.xml
 
+      - name: Disable R8 shrinking (ad SDK is not compatible with it)
+        run: |
+          python3 - <<'PY'
+          import glob, re
+          for f in glob.glob('android/app/build.gradle*'):
+              s = open(f).read()
+              if f.endswith('.kts'):
+                  add = '            isMinifyEnabled = false\n            isShrinkResources = false\n'
+              else:
+                  add = '            minifyEnabled false\n            shrinkResources false\n'
+              s, n = re.subn(r'(buildTypes\s*\{\s*(?:getByName\("release"\)|release)\s*\{\n)', lambda m: m.group(1) + add, s, count=1)
+              open(f, 'w').write(s)
+              print('patched', f, n)
+              print(s[s.find('buildTypes'):][:400])
+          PY
+
       - name: Configure release signing (only when the keystore secret exists)
         if: env.HAS_KEYSTORE == 'true'
         env:
@@ -118,7 +134,7 @@ jobs:
       - name: Build optimized test APKs
         run: |
           set +e
-          flutter build apk --release --split-per-abi --dart-define=BAZAAR_RSA_KEY=${{ secrets.BAZAAR_RSA_KEY }} > build.log 2>&1
+          flutter build apk --release --split-per-abi --dart-define=BAZAAR_RSA_KEY=${{ secrets.BAZAAR_RSA_KEY }} --dart-define=ADIVERY_APP_ID=${{ secrets.ADIVERY_APP_ID }} --dart-define=ADIVERY_REWARDED_ID=${{ secrets.ADIVERY_REWARDED_ID }} > build.log 2>&1
           code=$?
           tail -n 40 build.log
           if [ $code -ne 0 ]; then
@@ -131,7 +147,7 @@ jobs:
         if: env.HAS_KEYSTORE == 'true' && github.ref == 'refs/heads/main'
         run: |
           set +e
-          flutter build apk --release --dart-define=BAZAAR_RSA_KEY=${{ secrets.BAZAAR_RSA_KEY }} > store.log 2>&1
+          flutter build apk --release --dart-define=BAZAAR_RSA_KEY=${{ secrets.BAZAAR_RSA_KEY }} --dart-define=ADIVERY_APP_ID=${{ secrets.ADIVERY_APP_ID }} --dart-define=ADIVERY_REWARDED_ID=${{ secrets.ADIVERY_REWARDED_ID }} > store.log 2>&1
           code=$?
           tail -n 30 store.log
           if [ $code -ne 0 ]; then
