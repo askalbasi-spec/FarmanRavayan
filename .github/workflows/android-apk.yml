@@ -75,7 +75,16 @@ jobs:
           exit $code
 
       - name: Build optimized test APKs
-        run: flutter build apk --release --split-per-abi --dart-define=BAZAAR_RSA_KEY=${{ secrets.BAZAAR_RSA_KEY }}
+        run: |
+          set +e
+          flutter build apk --release --split-per-abi --dart-define=BAZAAR_RSA_KEY=${{ secrets.BAZAAR_RSA_KEY }} > build.log 2>&1
+          code=$?
+          tail -n 40 build.log
+          if [ $code -ne 0 ]; then
+            grep -nE "error|Error|FAILURE|What went wrong|Could not|not found|Unresolved|jitpack|Execution failed" -A3 build.log | head -50 > build.summary
+            echo "::error title=flutter build::$(head -c 6000 build.summary | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
+          fi
+          exit $code
 
       - name: Publish test APK
         if: github.event_name != 'pull_request'
